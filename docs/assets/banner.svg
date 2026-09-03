@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340"
+     role="img" aria-labelledby="t d">
+  <title id="t">adk-issue-triage</title>
+  <desc id="d">A Google ADK agent that triages GitHub issues. Beside the title, the terminal output of one real run: seven agents finishing between 0 and 22 seconds, three of them at the same instant, each writing one key into session state.</desc>
+
+  <defs>
+    <!-- The two marks the terminal output uses, drawn rather than typed: the
+         box-drawing bar and the hooked arrow are missing from many fallback
+         fonts, and a missing glyph in a banner is a broken banner. -->
+    <g id="conc"><rect width="2.5" height="13" rx="1.2" fill="#6fb3d4"/></g>
+    <g id="tostate"><path d="M0 0 V6 H7" fill="none" stroke="#6fb3d4" stroke-width="1.4"/></g>
+  </defs>
+
+  <rect width="1200" height="340" rx="26" fill="#0f1319"/>
+  <rect x="0.5" y="0.5" width="1199" height="339" rx="26" fill="none" stroke="#2a3340"/>
+
+  <g id="title-block" transform="translate(56 0)">
+    <text x="0" y="82" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" letter-spacing="2.6px" fill="#8b95a4">GOOGLE ADK &#183; PYTHON</text>
+    <text x="0" y="142" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="46" font-weight="700" letter-spacing="-0.8px" fill="#e4e8ee">adk-issue-triage</text>
+    <text x="0" y="186" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="17" fill="#8b95a4">Predicts the labels a human already applied to an issue &#8212;</text>
+    <text x="0" y="210" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="17" fill="#8b95a4">so the eval set is ground truth nobody invented.</text>
+
+    <rect x="0" y="242" width="9" height="9" rx="2" fill="#6fb3d4"/>
+    <text x="20" y="251" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" fill="#8b95a4">deterministic code</text>
+    <rect x="178" y="242" width="9" height="9" rx="2" fill="#dfa444"/>
+    <text x="198" y="251" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" fill="#8b95a4">probabilistic model</text>
+
+    <text x="0" y="292" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13.5" fill="#6fb3d4">$ ./scripts/demo.sh 4</text>
+  </g>
+
+  <g id="one-real-run" transform="translate(660 0)">
+    <rect x="0" y="42" width="484" height="256" rx="12" fill="#161b23" stroke="#2a3340"/>
+    <text x="20" y="72" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12" letter-spacing="1.4px" fill="#8b95a4">ONE RUN &#183; ISSUE 231 &#183; 22.2s</text>
+    <line x1="20" y1="84" x2="464" y2="84" stroke="#2a3340"/>
+    <text x="20" y="108" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4"> 0.0s</text>
+    <text x="78" y="108" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">intake_agent</text>
+    <text x="222" y="108" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#dfa444">&#8594;</text>
+    <text x="240" y="108" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#dfa444">fetch_issue(231)</text>
+    <text x="20" y="131" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4"> 6.8s</text>
+    <text x="78" y="131" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">intake_agent</text>
+    <use href="#tostate" x="240" y="122"/>
+    <text x="254" y="131" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4">state["issue"]</text>
+    <text x="20" y="154" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4"> 9.7s</text>
+    <use href="#conc" x="66" y="144"/>
+    <text x="78" y="154" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">kind_agent</text>
+    <text x="240" y="154" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">enhancement</text>
+    <use href="#tostate" x="392" y="145"/>
+    <text x="20" y="177" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4"> 9.7s</text>
+    <use href="#conc" x="66" y="167"/>
+    <text x="78" y="177" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">area_agent</text>
+    <text x="240" y="177" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">area/android</text>
+    <use href="#tostate" x="392" y="168"/>
+    <text x="20" y="200" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4"> 9.7s</text>
+    <use href="#conc" x="66" y="190"/>
+    <text x="78" y="200" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">dupe_agent</text>
+    <text x="222" y="200" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#dfa444">&#8594;</text>
+    <text x="240" y="200" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#dfa444">search_issues(…)</text>
+    <text x="20" y="223" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4">17.3s</text>
+    <text x="78" y="223" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">priority_agent</text>
+    <text x="240" y="223" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">priority/p3</text>
+    <use href="#tostate" x="392" y="214"/>
+    <text x="20" y="246" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4">19.8s</text>
+    <text x="78" y="246" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">readiness_agent</text>
+    <text x="240" y="246" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">ready-for-human</text>
+    <use href="#tostate" x="392" y="237"/>
+    <text x="20" y="269" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#8b95a4">22.2s</text>
+    <text x="78" y="269" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">synthesis_agent</text>
+    <text x="240" y="269" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="12.5" fill="#e4e8ee">{...}</text>
+    <use href="#tostate" x="392" y="260"/>
+    <use href="#conc" x="66" y="286"/>
+    <text x="78" y="296" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="11.5" fill="#6fb3d4">same instant &#8212; the fan-out</text>
+  </g>
+</svg>
