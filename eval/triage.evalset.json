@@ -1,0 +1,1567 @@
+{
+  "eval_set_id": "triage",
+  "name": "musicmeta issue triage",
+  "description": "Human-applied labels on famesjranko/musicmeta issues, used as ground truth.",
+  "eval_cases": [
+    {
+      "eval_id": "issue-2",
+      "conversation": [
+        {
+          "invocation_id": "issue-2",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 2."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p1\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 2
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-3",
+      "conversation": [
+        {
+          "invocation_id": "issue-3",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 3."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p1\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 3
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-4",
+      "conversation": [
+        {
+          "invocation_id": "issue-4",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 4."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/core\", \"priority\": \"priority/p1\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 4
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-5",
+      "conversation": [
+        {
+          "invocation_id": "issue-5",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 5."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/core\", \"priority\": \"priority/p1\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 5
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-6",
+      "conversation": [
+        {
+          "invocation_id": "issue-6",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 6."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 6
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-7",
+      "conversation": [
+        {
+          "invocation_id": "issue-7",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 7."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p1\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 7
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-10",
+      "conversation": [
+        {
+          "invocation_id": "issue-10",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 10."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 10
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-13",
+      "conversation": [
+        {
+          "invocation_id": "issue-13",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 13."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-agent\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 13
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-14",
+      "conversation": [
+        {
+          "invocation_id": "issue-14",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 14."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-agent\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 14
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-16",
+      "conversation": [
+        {
+          "invocation_id": "issue-16",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 16."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p1\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 16
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-19",
+      "conversation": [
+        {
+          "invocation_id": "issue-19",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 19."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/docs\", \"priority\": \"priority/p3\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 19
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-21",
+      "conversation": [
+        {
+          "invocation_id": "issue-21",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 21."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/docs\", \"priority\": \"priority/p2\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 21
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-22",
+      "conversation": [
+        {
+          "invocation_id": "issue-22",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 22."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/core\", \"priority\": \"priority/p2\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 22
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-23",
+      "conversation": [
+        {
+          "invocation_id": "issue-23",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 23."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"documentation\", \"area\": \"area/docs\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-agent\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 23
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-28",
+      "conversation": [
+        {
+          "invocation_id": "issue-28",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 28."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/core\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-agent\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 28
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-35",
+      "conversation": [
+        {
+          "invocation_id": "issue-35",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 35."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-agent\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 35
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-37",
+      "conversation": [
+        {
+          "invocation_id": "issue-37",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 37."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 37
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-38",
+      "conversation": [
+        {
+          "invocation_id": "issue-38",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 38."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 38
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-48",
+      "conversation": [
+        {
+          "invocation_id": "issue-48",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 48."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/core\", \"priority\": \"priority/p3\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 48
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-49",
+      "conversation": [
+        {
+          "invocation_id": "issue-49",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 49."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"bug\", \"area\": \"area/core\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-agent\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 49
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-50",
+      "conversation": [
+        {
+          "invocation_id": "issue-50",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 50."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/core\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 50
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-51",
+      "conversation": [
+        {
+          "invocation_id": "issue-51",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 51."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p2\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 51
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-55",
+      "conversation": [
+        {
+          "invocation_id": "issue-55",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 55."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"bug\", \"area\": \"area/core\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 55
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-56",
+      "conversation": [
+        {
+          "invocation_id": "issue-56",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 56."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"bug\", \"area\": \"area/core\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 56
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-57",
+      "conversation": [
+        {
+          "invocation_id": "issue-57",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 57."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/docs\", \"priority\": \"priority/p1\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 57
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-58",
+      "conversation": [
+        {
+          "invocation_id": "issue-58",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 58."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p2\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 58
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-59",
+      "conversation": [
+        {
+          "invocation_id": "issue-59",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 59."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 59
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-60",
+      "conversation": [
+        {
+          "invocation_id": "issue-60",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 60."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 60
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-61",
+      "conversation": [
+        {
+          "invocation_id": "issue-61",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 61."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/core\", \"priority\": \"priority/p2\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 61
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-65",
+      "conversation": [
+        {
+          "invocation_id": "issue-65",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 65."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 65
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-68",
+      "conversation": [
+        {
+          "invocation_id": "issue-68",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 68."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p2\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 68
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-71",
+      "conversation": [
+        {
+          "invocation_id": "issue-71",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 71."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": \"enhancement\", \"area\": \"area/core\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 71
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-74",
+      "conversation": [
+        {
+          "invocation_id": "issue-74",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 74."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/provider\", \"priority\": \"priority/p3\", \"readiness\": null}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 74
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-227",
+      "conversation": [
+        {
+          "invocation_id": "issue-227",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 227."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 227
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-228",
+      "conversation": [
+        {
+          "invocation_id": "issue-228",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 228."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p3\", \"readiness\": \"ready-for-agent\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 228
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-229",
+      "conversation": [
+        {
+          "invocation_id": "issue-229",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 229."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/ci\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 229
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-230",
+      "conversation": [
+        {
+          "invocation_id": "issue-230",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 230."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/okhttp\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 230
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-231",
+      "conversation": [
+        {
+          "invocation_id": "issue-231",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 231."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/android\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 231
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "issue-232",
+      "conversation": [
+        {
+          "invocation_id": "issue-232",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Triage issue 232."
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"kind\": null, \"area\": \"area/core\", \"priority\": \"priority/p2\", \"readiness\": \"ready-for-human\"}"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "fetch_issue",
+                "args": {
+                  "number": 232
+                }
+              }
+            ],
+            "tool_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "issue_triage",
+        "user_id": "eval",
+        "state": {}
+      }
+    }
+  ]
+}
