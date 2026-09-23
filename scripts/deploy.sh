@@ -34,6 +34,13 @@ case "${1:-deploy}" in
     else
       printf '%s' "$key" | gcloud secrets create "$SECRET" --data-file=- --project "$PROJECT"
     fi
+    # The revision runs as the default compute service account, which cannot
+    # read the secret until granted. Without this the build succeeds and the
+    # revision then fails to start.
+    number=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
+    gcloud secrets add-iam-policy-binding "$SECRET" --project "$PROJECT" \
+      --member="serviceAccount:${number}-compute@developer.gserviceaccount.com" \
+      --role=roles/secretmanager.secretAccessor >/dev/null
     ;;
 
   deploy)
@@ -52,7 +59,7 @@ case "${1:-deploy}" in
       --min-instances=0 \
       --no-allow-unauthenticated \
       --set-secrets="GOOGLE_API_KEY=${SECRET}:latest" \
-      --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=FALSE"
+      --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=FALSE,GOOGLE_GENAI_USE_ENTERPRISE=FALSE"
     ;;
 
   url)
