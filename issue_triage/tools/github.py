@@ -3,10 +3,22 @@
 Each function here is a narrow, typed operation — the agent's only route to
 GitHub. The docstrings are the model's API contract: they are what Gemini sees
 when deciding which tool to call and with what arguments.
+
+Transport is the GitHub REST API over stdlib urllib, so the agent runs anywhere
+Python does (the Cloud Run image has no `gh` CLI). Reads of the public target
+repositories need no credentials. Writes (apply_labels) need $GITHUB_TOKEN with
+issues:write on the target repository; without it apply_labels returns an error
+dict instead of attempting the request.
+
+Every public function returns a dict and never raises: failures come back as
+{"error": "..."} so the model can see and react to them.
 """
 
 import json
-import subprocess
+import os
+import urllib.error
+import urllib.parse
+import urllib.request
 
 # Free-tier Gemini may retain prompts for product improvement, so the agent is
 # hard-limited to repositories that are already public. This is enforced here in
@@ -15,20 +27,38 @@ ALLOWED_REPOS = ("famesjranko/musicmeta", "famesjranko/MediaStack")
 
 REPO = "famesjranko/musicmeta"
 
+API_ROOT = "https://api.github.com"
+API_VERSION = "2022-11-28"
+JSON_MEDIA_TYPE = "application/vnd.github+json"
+TIMEOUT_SECONDS = 30
+
 
 class RepoNotAllowed(RuntimeError):
     pass
 
 
-def _gh(*args: str) -> str:
+def _repo() -> str:
+    """The target repository, refused unless it is on the public allowlist."""
     if REPO not in ALLOWED_REPOS:
         raise RepoNotAllowed(f"{REPO} is not in the public-repo allowlist")
-    result = subprocess.run(
-        ["gh", *args], capture_output=True, text=True, timeout=60
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"gh {' '.join(args)} failed: {result.stderr.strip()}")
-    return result.stdout
+    return REPO
+
+
+def _describe(exc: Exception) -> str:
+    """A one-line, model-readable account of a failed request."""
+    if isinstance(exc, urllib.error.HTTPError):
+        detail = exc.reason
+        try:
+            payload = json.loads(exc.read() or b"{}")
+            detail = payload.get("message") or detail
+        except (ValueError, OSError, AttributeError):
+            pass
+        return f"GitHub API {exc.code} for {exc.url}: {detail}"
+    if isinstance(exc, urllib.error.URLError):
+        return f"GitHub API unreachable: {exc.reason}"
+    if isinstance(exc, TimeoutError):
+        return f"GitHub API timed out after {TIMEOUT_SECONDS}s"
+    return str(exc)
 
 
 def fetch_issue(number: int) -> dict:
@@ -46,20 +76,20 @@ def fetch_issue(number: int) -> dict:
         On failure, a dict with an "error" key describing what went wrong.
     """
     try:
-        raw = _gh(
-            "issue", "view", str(number), "-R", REPO,
-            "--json", "number,title,body,state,comments",
+        repo = _repo()
+        data = _request("GET", f"/repos/{repo}/issues/{int(number)}")
+        comments = _request(
+            "GET", f"/repos/{repo}/issues/{int(number)}/comments?per_page=10"
         )
+        return {
+            "number": data["number"],
+            "title": data["title"],
+            "body": (data.get("body") or "")[:8000],
+            "state": data["state"].upper(),
+            "comments": [(c.get("body") or "")[:2000] for c in comments][:10],
+        }
     except Exception as exc:
-        return {"error": str(exc)}
-    data = json.loads(raw)
-    return {
-        "number": data["number"],
-        "title": data["title"],
-        "body": (data.get("body") or "")[:8000],
-        "state": data["state"],
-        "comments": [c["body"][:2000] for c in data.get("comments", [])][:10],
-    }
+        return {"error": _describe(exc)}
 
 
 def search_issues(query: str) -> dict:
@@ -75,13 +105,17 @@ def search_issues(query: str) -> dict:
         title and state. On failure, a dict with an "error" key.
     """
     try:
-        raw = _gh(
-            "issue", "list", "-R", REPO, "--search", query,
-            "--state", "all", "--limit", "10", "--json", "number,title,state",
-        )
+        q = urllib.parse.quote(f"{query} repo:{_repo()} is:issue")
+        data = _request("GET", f"/search/issues?q={q}&per_page=10")
+        return {
+            "matches": [
+                {"number": i["number"], "title": i["title"],
+                 "state": i["state"].upper()}
+                for i in data["items"][:10]
+            ]
+        }
     except Exception as exc:
-        return {"error": str(exc)}
-    return {"matches": json.loads(raw)}
+        return {"error": _describe(exc)}
 
 
 def list_labels() -> dict:
@@ -94,10 +128,15 @@ def list_labels() -> dict:
         A dict with key "labels": a list of dicts with name and description.
     """
     try:
-        raw = _gh("label", "list", "-R", REPO, "--limit", "100", "--json", "name,description")
+        data = _request("GET", f"/repos/{_repo()}/labels?per_page=100")
+        return {
+            "labels": [
+                {"name": l["name"], "description": l.get("description") or ""}
+                for l in data
+            ]
+        }
     except Exception as exc:
-        return {"error": str(exc)}
-    return {"labels": json.loads(raw)}
+        return {"error": _describe(exc)}
 
 
 def apply_labels(number: int, labels: list[str]) -> dict:
@@ -118,8 +157,47 @@ def apply_labels(number: int, labels: list[str]) -> dict:
         On failure, a dict with an "error" key.
     """
     try:
-        _gh("issue", "edit", str(number), "-R", REPO,
-            *[arg for label in labels for arg in ("--add-label", label)])
+        repo = _repo()
+        if not os.environ.get("GITHUB_TOKEN"):
+            return {
+                "error": "apply_labels requires a GitHub token: set GITHUB_TOKEN "
+                         f"to a token with issues:write on {repo}"
+            }
+        _request(
+            "POST", f"/repos/{repo}/issues/{int(number)}/labels",
+            body={"labels": list(labels)},
+        )
     except Exception as exc:
-        return {"error": str(exc)}
+        return {"error": _describe(exc)}
     return {"number": number, "applied": labels}
+
+
+def _request(method: str, path: str, body: dict | None = None,
+             accept: str = JSON_MEDIA_TYPE):
+    """Send one GitHub REST request; the single route every call takes.
+
+    Returns the decoded JSON payload, or the raw response text when `accept`
+    names a non-JSON media type. Raises urllib.error.HTTPError on a non-2xx
+    status and urllib.error.URLError on a network failure; callers turn those
+    into error dicts.
+    """
+    headers = {
+        "Accept": accept,
+        "X-GitHub-Api-Version": API_VERSION,
+        "User-Agent": "adk-issue-triage",
+    }
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    data = None
+    if body is not None:
+        data = json.dumps(body).encode()
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(
+        API_ROOT + path, data=data, headers=headers, method=method
+    )
+    with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as resp:
+        text = resp.read().decode("utf-8")
+    if accept != JSON_MEDIA_TYPE:
+        return text
+    return json.loads(text) if text else None

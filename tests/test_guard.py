@@ -5,8 +5,8 @@ a well-behaved model simply declines and the guard never runs. In one attempt
 the model called list_labels first, noticed the label did not exist, and refused
 on its own — good behaviour, zero coverage. These call the guards directly.
 
-The label vocabulary is pinned by an autouse fixture, so validation never shells
-out to `gh label list` and the suite runs offline.
+The label vocabulary is pinned by an autouse fixture, so validation never calls
+list_labels (a GitHub REST request) and the suite runs offline.
 """
 
 import sys

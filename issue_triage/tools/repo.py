@@ -5,15 +5,17 @@ modules in a hand-written prompt that will silently rot, we read them out of the
 repo's ARCHITECTURE.md so the grounding tracks the code.
 
 Source: $MUSICMETA_PATH/ARCHITECTURE.md when that env var points at a local
-checkout, otherwise the file on GitHub via `gh api`.
+checkout, otherwise the file on GitHub via the REST contents endpoint.
 """
 
 import functools
 import os
-import subprocess
 from pathlib import Path
 
+from . import github
+
 ARCH_REPO = "famesjranko/musicmeta"
+RAW_MEDIA_TYPE = "application/vnd.github.raw"
 
 
 class _Unavailable(Exception):
@@ -26,19 +28,13 @@ def _read_architecture() -> str:
         doc = Path(local) / "ARCHITECTURE.md"
         if doc.is_file():
             return doc.read_text()
-    args = [
-        "api", f"repos/{ARCH_REPO}/contents/ARCHITECTURE.md",
-        "-H", "Accept: application/vnd.github.raw",
-    ]
     try:
-        result = subprocess.run(
-            ["gh", *args], capture_output=True, text=True, timeout=60
+        return github._request(
+            "GET", f"/repos/{ARCH_REPO}/contents/ARCHITECTURE.md",
+            accept=RAW_MEDIA_TYPE,
         )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise _Unavailable(f"gh {' '.join(args)} failed: {exc}") from exc
-    if result.returncode != 0:
-        raise _Unavailable(f"gh {' '.join(args)} failed: {result.stderr.strip()}")
-    return result.stdout
+    except Exception as exc:
+        raise _Unavailable(github._describe(exc)) from exc
 
 
 @functools.cache
