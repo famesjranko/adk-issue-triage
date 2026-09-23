@@ -25,3 +25,6 @@ eval/run-*.json
 
 # Logs
 *.log
+
+# Browser-automation scratch
+.playwright-mcp/
