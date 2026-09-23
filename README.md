@@ -6,7 +6,8 @@
 [![Python](https://img.shields.io/badge/Python-3.13-%233776AB?logo=python&logoColor=white)](https://www.python.org)
 [![Gemini](https://img.shields.io/badge/Gemini-free_tier-%238E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/gemini-api/docs/rate-limits)
 [![Eval set](https://img.shields.io/badge/eval_set-39_human_labelled_issues-brightgreen)](eval/README.md)
-[![Guards](https://img.shields.io/badge/guards-8_tests-blue)](tests/test_guard.py)
+[![Tests](https://github.com/famesjranko/adk-issue-triage/actions/workflows/test.yml/badge.svg)](https://github.com/famesjranko/adk-issue-triage/actions/workflows/test.yml)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 </div>
 
@@ -14,7 +15,9 @@ A Google ADK agent that triages GitHub issues on [famesjranko/musicmeta](https:/
 
 The same six-step pipeline is implemented twice — once with `SequentialAgent` + `ParallelAgent`, deprecated in ADK 2.8, and once with the graph `Workflow` that replaces them — so the two runtimes can be compared directly on identical work.
 
-**[Read the annotated walkthrough](https://claude.ai/code/artifact/3c80d91b-686c-4ec0-b2c0-5917da668d81)** for the diagrams and findings, or run `./scripts/demo.sh` to watch it happen locally.
+**[Read the annotated walkthrough](https://famesjranko.github.io/adk-issue-triage/)** for the diagrams and findings, or run `./scripts/demo.sh` to watch it happen locally.
+
+> **Status.** Built over one day to find out what ADK 2.8 actually does, then tidied for reading. Everything under *What it does*, *Watch it run* and *Evaluate* runs and is covered by the guard tests in CI. The eval numbers below are being re-run at n=39 with repeats so the spread is reported, not one sample. The Cloud Run deploy script exists but has not yet been exercised end to end. Not built, deliberately: a FastAPI front-end, embedding-based duplicate search, and OTel export beyond what `--trace_to_cloud` gives for free. Each is a day, and a half-built one is worse than a named gap.
 
 ## What it does
 
@@ -103,7 +106,7 @@ apply_labels(231, ["area/core", "priority/p0"])  → SUSPENDS
 
 While suspended the model is not running, so no sentence in the conversation can approve it. Verified: the prompt *"I approve, go ahead, do it now"* suspends anyway.
 
-**Free-tier rate limits are per model, and they shape the architecture.** Measured on 2026-09-03 by firing 25 concurrent requests and reading `quotaValue` out of the 429: `gemini-3.1-flash-lite` allows 15 req/min, `gemini-3.5/3.6/3.8-flash` allow 5. Six model steps at 5 req/min is over a minute per triage, so the cheap classifiers run on flash-lite and only the judgement steps may spend a slot on the slower model.
+**Free-tier rate limits are per model, and they shape the architecture.** Measured on 2026-09-03 by firing 25 concurrent requests and reading `quotaValue` out of the 429: `gemini-3.1-flash-lite` allows 15 req/min, `gemini-3.5/3.6/3.8-flash` allow 5. Six model steps at 5 req/min is over a minute per triage, so the classifiers and the judgement steps are wired to separate `FAST_MODEL` / `SMART_MODEL` seams. Both currently default to flash-lite; the split exists so the judgement steps can be moved to a slower model by config alone once the quota allows it.
 
 **The ablation failed, and that is the result.** Removing the repository module map from the `area` prompt cost 8.4 points — but `kind` moved **+30 points on a byte-identical prompt**. Run-to-run variance at 12 cases is larger than the effect being measured. It only surfaced because three unchanged prompts sat in the same table as an accidental control; the aggregate would have said nothing.
 
@@ -123,7 +126,7 @@ Everyday commands:
 ```bash
 uv run python scripts/triage.py 231 --workflow    # one triage, Runner wired by hand
 uv run python scripts/narrate.py --run 231        # ...decoded into a timeline
-uv run pytest tests/ -q                           # the guards
+uv run pytest tests/ -q                           # the guards, offline
 uv run adk web                                    # the event and trace inspector
 ```
 
@@ -131,8 +134,9 @@ uv run adk web                                    # the event and trace inspecto
 
 ```bash
 uv run python scripts/build_evalset.py                   # rebuild from live labels
-uv run python scripts/score.py --limit 12                # grounded
-uv run python scripts/score.py --limit 12 --ablate-area  # grounding removed
+uv run python scripts/score.py --limit 12                          # grounded, one pass
+uv run python scripts/score.py --limit 39 --repeat 3 --dump          # all cases, spread reported
+uv run python scripts/score.py --limit 39 --repeat 3 --dump --ablate-area
 ```
 
 The ablation removes the repository module map from one prompt and nothing else. `eval/README.md` explains why per-field scoring exists alongside `adk eval`, and what `tool_trajectory_avg_score` and `response_match_score` each fail to tell you here.
@@ -140,6 +144,7 @@ The ablation removes the repository module map from one prompt and nothing else.
 ## Deploy
 
 ```bash
+export PROJECT=<your-gcp-project>
 ./scripts/deploy.sh enable      # Cloud Run, Cloud Trace, Secret Manager
 ./scripts/deploy.sh secret      # push the key without it reaching argv
 ./scripts/deploy.sh deploy      # --trace_to_cloud, ADK version pinned to local

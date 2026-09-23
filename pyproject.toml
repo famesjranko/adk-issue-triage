@@ -1,7 +1,7 @@
 [project]
 name = "issue-triage"
 version = "0.1.0"
-description = "Add your description here"
+description = "Google ADK issue-triage agent — graph Workflow vs deprecated SequentialAgent, suspend-based approval gates, and per-field evals against real human labels"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

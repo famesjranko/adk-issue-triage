@@ -8,10 +8,10 @@
 #
 # TEARDOWN is deliberately not scripted here. Run it yourself when done:
 #   gcloud run services delete issue-triage --region australia-southeast1 \
-#     --project landofoz-3b929
+#     --project "$PROJECT"
 set -euo pipefail
 
-PROJECT="${PROJECT:-landofoz-3b929}"
+PROJECT="${PROJECT:?set PROJECT to the GCP project id}"
 REGION="${REGION:-australia-southeast1}"
 SERVICE="${SERVICE:-issue-triage}"
 SECRET="${SECRET:-gemini-api-key}"
@@ -40,6 +40,7 @@ case "${1:-deploy}" in
     # --adk_version defaults to an older release than the one developed against,
     # which would deploy an agent that behaves differently from local. Pin it.
     adk_version="$(uv run python -c 'import google.adk; print(google.adk.__version__)')"
+    # --no-allow-unauthenticated: a public URL would let anyone spend the API key's quota.
     uv run adk deploy cloud_run issue_triage \
       --project "$PROJECT" \
       --region "$REGION" \
@@ -49,6 +50,7 @@ case "${1:-deploy}" in
       --trace_to_cloud \
       -- \
       --min-instances=0 \
+      --no-allow-unauthenticated \
       --set-secrets="GOOGLE_API_KEY=${SECRET}:latest" \
       --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=FALSE"
     ;;

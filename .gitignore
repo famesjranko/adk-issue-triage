@@ -19,6 +19,9 @@ wheels/
 **/.adk/
 eval/run-*.json
 
-# Vendored agents-cli skills — reinstall with `agents-cli setup --workspace`.
-# skills-lock.json pins the version.
+# Vendored agent-tooling skills — reinstall with `agents-cli setup --workspace`; skills-lock.json pins the version.
 .claude/skills/
+.claude/
+
+# Logs
+*.log

@@ -103,8 +103,10 @@ def list_labels() -> dict:
 def apply_labels(number: int, labels: list[str]) -> dict:
     """Apply the chosen labels to an issue. This WRITES to GitHub.
 
-    This is a privileged operation. It is gated by an approval check outside the
-    model: the write only proceeds once a human has approved the triage result.
+    This is a privileged operation. The write is wrapped in
+    FunctionTool(require_confirmation=needs_confirmation), which suspends the
+    invocation until a structured ToolConfirmation arrives. The model cannot
+    approve it in text.
 
     Args:
         number: The issue number to label.

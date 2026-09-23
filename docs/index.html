@@ -1379,8 +1379,8 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
       <div class="todo-body">
         <p class="t"><code>agents-cli</code> skills installed</p>
         <p class="d">
-          Seven ADK skills in <code>.claude/skills/</code>, workspace scope, so
-          nothing global was touched. Google&rsquo;s own reference is where the
+          Seven ADK skills from google/agents-cli, pinned in
+          <code>skills-lock.json</code>, workspace scope, so nothing global was touched. Google&rsquo;s own reference is where the
           <code>Workflow</code> API turned up &mdash; the published docs still
           describe the deprecated one.
         </p>
@@ -1437,9 +1437,8 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
     <div class="panel is-halt">
       <p class="panel-title">The API key must stay on the unbilled project</p>
       <p>
-        It is issued against <code>gen-lang-client-0677432827</code>, which has
-        billing disabled &mdash; that is what keeps it on the free tier. A key on
-        <code>landofoz-3b929</code> or <code>musicmeta-demo-4821</code> would
+        It is issued against a project with billing disabled &mdash; that is what
+        keeps it on the free tier. A key on any project with billing enabled would
         auto-upgrade to a paid tier and bill per token. Free-tier prompts are also
         used to improve Google&rsquo;s products, which is why the tool layer
         hard-limits the agent to public repositories in code rather than asking a

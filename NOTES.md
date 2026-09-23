@@ -126,6 +126,8 @@ reading `quotaValue` out of the 429:
 Six LLM steps at 5 RPM is over a minute per triage. So the cheap single-label
 classifiers run on flash-lite and only the steps where judgement matters may
 spend a slot on the slower model — `FAST_MODEL` / `SMART_MODEL` in `prompts.py`.
+Both default to flash-lite today; the seam is there so the judgement steps can
+move by config alone.
 
 `RateLimitPlugin` keeps **one sliding window per model**, not one per project. A
 single shared counter would either throttle the fast model to the slow model's
@@ -190,8 +192,9 @@ What this actually says:
   per-case variance. Either many more cases, or repeated runs per config with
   the spread reported, or both — and 39 labelled issues may simply not be enough
   ground truth to settle it at all.
-- **`temperature` was never pinned.** Nothing in these agents sets it, so every
-  run samples differently. That should be the first fix before re-running.
+- **`temperature` was not pinned when these numbers were taken.** It is now
+  (`DETERMINISTIC` in both agent files), and the re-run below reports spread
+  across repeats rather than one sample.
 - **Quoting a single eval number as if it were a measurement is the trap.** The
   number moved 30 points without anyone touching the thing it was measuring.
 
@@ -219,8 +222,8 @@ This machine sets `NO_PROXY` containing `::1`. `httpx` cannot parse it and every
 
 ## Cost posture
 
-Everything here runs on the AI Studio **free tier**, keyed to project
-`gen-lang-client-0677432827` (billing disabled). A key issued against a project
+Everything here runs on the AI Studio **free tier**, keyed to a project
+with billing disabled. A key issued against a project
 with billing enabled auto-upgrades to a paid tier and bills per token.
 
 Free tier prompts are used to improve Google's products — the pricing page says

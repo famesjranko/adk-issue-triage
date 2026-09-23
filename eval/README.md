@@ -29,6 +29,7 @@ that got every label wrong but formatted them beautifully.
 uv run python scripts/score.py --limit 12                    # grounded
 uv run python scripts/score.py --limit 12 --ablate-area      # grounding removed
 uv run python scripts/score.py --limit 12 --topology sequential
+uv run python scripts/score.py --limit 39 --repeat 3 --dump    # spread, committed to eval/results/
 ```
 
 Parses the JSON and scores each field separately, so `area/*` and `priority/*`
