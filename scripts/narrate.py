@@ -17,15 +17,15 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-
-from dotenv import load_dotenv
 
 load_dotenv(ROOT / "issue_triage" / ".env", override=True)
 
 from issue_triage import console  # noqa: E402
-from issue_triage.quota import daily_quota_message  # noqa: E402
+from issue_triage.quota import daily_quota_message, transient_unavailable_message  # noqa: E402
 from issue_triage.repository_data import RepositoryData  # noqa: E402
 from issue_triage.tools.github import _request  # noqa: E402
 
@@ -98,10 +98,10 @@ def truth_for(number: int) -> dict | None:
       for label in issue["labels"]
   ]
   return {
-      "kind": next((l for l in names if l in KINDS), None),
-      "area": next((l for l in names if l.startswith("area/")), None),
-      "priority": next((l for l in names if l.startswith("priority/")), None),
-      "readiness": next((l for l in names if l in READINESS), None),
+      "kind": next((label for label in names if label in KINDS), None),
+      "area": next((label for label in names if label.startswith("area/")), None),
+      "priority": next((label for label in names if label.startswith("priority/")), None),
+      "readiness": next((label for label in names if label in READINESS), None),
   }
 
 
@@ -203,11 +203,13 @@ if __name__ == "__main__":
     try:
       data = asyncio.run(run_fresh(args.run, workflow=not args.sequential))
     except Exception as exc:
-      message = daily_quota_message(exc)
-      if message is None:
-        raise
-      console.notice("QUOTA LIMIT", message)
-      raise SystemExit(2) from None
+      if message := daily_quota_message(exc):
+        console.notice("QUOTA LIMIT", message)
+        raise SystemExit(2) from None
+      if message := transient_unavailable_message(exc):
+        console.notice("UPSTREAM UNAVAILABLE", message)
+        raise SystemExit(3) from None
+      raise
     render(data, args.run)
   else:
     data = from_server(None if args.latest else args.session)

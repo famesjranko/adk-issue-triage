@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # Deploy the triage agent to Cloud Run with traces going to Cloud Trace.
 #
-# Cost posture: Cloud Run scales to zero and a demo service sits inside the
-# always-free allowance. Model calls still go to the AI Studio free tier via the
-# key in Secret Manager — Vertex AI is deliberately NOT used, because it has no
-# free tier and this project has billing enabled.
+# Cloud Run scales to zero, but model calls use billed Vertex AI. This keeps a
+# deployed service separate from the AI Studio quota used by local demo runs.
 #
 # TEARDOWN is deliberately not scripted here. Run it yourself when done:
 #   gcloud run services delete issue-triage --region australia-southeast1 \
@@ -14,40 +12,28 @@ set -euo pipefail
 PROJECT="${PROJECT:?set PROJECT to the GCP project id}"
 REGION="${REGION:-australia-southeast1}"
 SERVICE="${SERVICE:-issue-triage}"
-SECRET="${SECRET:-gemini-api-key}"
 
 case "${1:-deploy}" in
 
   enable)
     gcloud services enable \
-      run.googleapis.com cloudtrace.googleapis.com secretmanager.googleapis.com \
-      cloudbuild.googleapis.com artifactregistry.googleapis.com \
+      run.googleapis.com cloudtrace.googleapis.com aiplatform.googleapis.com \
+      cloudbuild.googleapis.com artifactregistry.googleapis.com compute.googleapis.com \
       --project "$PROJECT"
-    ;;
-
-  secret)
-    # Push the local key into Secret Manager without it appearing in argv.
-    key=$(grep '^GOOGLE_API_KEY=' issue_triage/.env | cut -d= -f2-)
-    [ -n "$key" ] || { echo "no GOOGLE_API_KEY in issue_triage/.env" >&2; exit 1; }
-    if gcloud secrets describe "$SECRET" --project "$PROJECT" >/dev/null 2>&1; then
-      printf '%s' "$key" | gcloud secrets versions add "$SECRET" --data-file=- --project "$PROJECT"
-    else
-      printf '%s' "$key" | gcloud secrets create "$SECRET" --data-file=- --project "$PROJECT"
-    fi
-    # The revision runs as the default compute service account, which cannot
-    # read the secret until granted. Without this the build succeeds and the
-    # revision then fails to start.
     number=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
-    gcloud secrets add-iam-policy-binding "$SECRET" --project "$PROJECT" \
-      --member="serviceAccount:${number}-compute@developer.gserviceaccount.com" \
-      --role=roles/secretmanager.secretAccessor >/dev/null
+    runtime="serviceAccount:${number}-compute@developer.gserviceaccount.com"
+    gcloud projects add-iam-policy-binding "$PROJECT" \
+      --member="$runtime" --role=roles/aiplatform.user >/dev/null
+    gcloud projects add-iam-policy-binding "$PROJECT" \
+      --member="$runtime" --role=roles/cloudtrace.agent >/dev/null
     ;;
 
   deploy)
     # --adk_version defaults to an older release than the one developed against,
     # which would deploy an agent that behaves differently from local. Pin it.
     adk_version="$(uv run python -c 'import google.adk; print(google.adk.__version__)')"
-    # --no-allow-unauthenticated: a public URL would let anyone spend the API key's quota.
+    # --no-allow-unauthenticated: a public URL would let anyone create billed
+    # Vertex AI traffic.
     # GOOGLE_CLOUD_PROJECT: --trace_to_cloud only registers the exporter when this
     # is set. Without it the service starts, logs one warning, and traces nothing.
     uv run adk deploy cloud_run issue_triage \
@@ -60,8 +46,7 @@ case "${1:-deploy}" in
       -- \
       --min-instances=0 \
       --no-allow-unauthenticated \
-      --set-secrets="GOOGLE_API_KEY=${SECRET}:latest" \
-      --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=FALSE,GOOGLE_GENAI_USE_ENTERPRISE=FALSE,GOOGLE_CLOUD_PROJECT=${PROJECT},GOOGLE_CLOUD_LOCATION=global"
+      --set-env-vars="GOOGLE_GENAI_USE_ENTERPRISE=TRUE,GOOGLE_CLOUD_PROJECT=${PROJECT},GOOGLE_CLOUD_LOCATION=global"
     ;;
 
   url)
@@ -74,7 +59,7 @@ case "${1:-deploy}" in
     ;;
 
   *)
-    echo "usage: $0 {enable|secret|deploy|url|traces}" >&2
+    echo "usage: $0 {enable|deploy|url|traces}" >&2
     echo "teardown is manual — see the header of this file" >&2
     exit 1
     ;;

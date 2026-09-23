@@ -9,4 +9,4 @@ from .console import silence_library_noise
 
 silence_library_noise()
 
-from . import agent  # noqa: E402
+from . import agent as agent  # noqa: E402

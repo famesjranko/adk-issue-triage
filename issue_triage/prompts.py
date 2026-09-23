@@ -12,9 +12,9 @@ from .tools.repo import read_module_map
 # Free-tier requests-per-minute, measured against this account on 2026-09-03:
 #   gemini-3.1-flash-lite  15 RPM
 #   gemini-3.5 / 3.6-flash  5 RPM
-# A six-agent pipeline at 5 RPM takes over a minute per triage, so the cheap
-# single-label classifiers run on flash-lite and only the steps where judgement
-# actually matters are allowed to cost a slot on the slower, stronger model.
+# Seven model-backed stages at 5 RPM take over a minute before tool use adds
+# another model call, so the cheap single-label classifiers run on flash-lite.
+# Only the stages where judgement matters may use the slower, stronger model.
 # Both are overridable so the eval set can be run across model tiers.
 FAST_MODEL = os.environ.get("TRIAGE_FAST_MODEL", "gemini-3.1-flash-lite")
 SMART_MODEL = os.environ.get("TRIAGE_SMART_MODEL", "gemini-3.1-flash-lite")

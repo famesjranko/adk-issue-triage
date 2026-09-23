@@ -23,10 +23,10 @@ import sys
 import time
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-
-from dotenv import load_dotenv
 
 load_dotenv(ROOT / "issue_triage" / ".env", override=True)
 
@@ -35,7 +35,7 @@ from google.genai import types  # noqa: E402
 
 from issue_triage import console, prompts  # noqa: E402
 from issue_triage.plugins import CostMeterPlugin, RateLimitPlugin  # noqa: E402
-from issue_triage.quota import daily_quota_message  # noqa: E402
+from issue_triage.quota import daily_quota_message, transient_unavailable_message  # noqa: E402
 
 FIELDS = ("kind", "area", "priority", "readiness")
 
@@ -260,8 +260,10 @@ if __name__ == "__main__":
   try:
     asyncio.run(main(ap.parse_args()))
   except Exception as exc:
-    message = daily_quota_message(exc)
-    if message is None:
-      raise
-    console.notice("QUOTA LIMIT", message)
-    raise SystemExit(2) from None
+    if message := daily_quota_message(exc):
+      console.notice("QUOTA LIMIT", message)
+      raise SystemExit(2) from None
+    if message := transient_unavailable_message(exc):
+      console.notice("UPSTREAM UNAVAILABLE", message)
+      raise SystemExit(3) from None
+    raise

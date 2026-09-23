@@ -30,15 +30,15 @@ def truth(labels: list[str]) -> dict | None:
   Returns None for issues that lack the two fields we always grade, so the eval
   set never contains a case whose answer we do not actually know.
   """
-  area = next((l for l in labels if l.startswith("area/")), None)
-  priority = next((l for l in labels if l.startswith("priority/")), None)
+  area = next((label for label in labels if label.startswith("area/")), None)
+  priority = next((label for label in labels if label.startswith("priority/")), None)
   if not area or not priority:
     return None
   return {
-      "kind": next((l for l in labels if l in KINDS), None),
+      "kind": next((label for label in labels if label in KINDS), None),
       "area": area,
       "priority": priority,
-      "readiness": next((l for l in labels if l in READINESS), None),
+      "readiness": next((label for label in labels if label in READINESS), None),
   }
 
 

@@ -16,16 +16,16 @@ class shipped in the package before the docs described it.
 That makes the SequentialAgent / ParallelAgent / LoopAgent set that every ADK
 tutorial teaches the previous generation. I implemented both here:
 `issue_triage/agent.py` (deprecated form) and `issue_triage/workflow_agent.py`
-(graph form), with the same six steps, so they can be compared directly.
+(graph form), with the same seven model-backed stages, so they can be compared directly.
 
 A `Workflow` also cannot currently be a sub-agent of an `LlmAgent`, which I
 found out the hard way. The deprecated pipeline sits under an LlmAgent router,
 while the graph version has to be the root, and that is a real cost for anyone
 migrating.
 
-## 2. The graph form used 4× fewer prompt tokens for identical work
+## 2. The graph form used 4× fewer prompt tokens in one comparison
 
-Both runs used the same issue, the same models and the same six steps:
+Both runs used the same issue, models and stages:
 
 | topology | model calls | prompt tokens |
 |---|---|---|
@@ -33,8 +33,8 @@ Both runs used the same issue, the same models and the same six steps:
 | graph `Workflow` | 9 | 4,400 |
 
 `SequentialAgent` hands each sub-agent the accumulated conversation, while the
-graph passes node input along edges. Over six LLM steps the difference
-compounds, and nothing in the agent code shows it, which is why
+graph passes node input along edges. The difference compounds across the seven
+stages, and nothing in the agent code shows it, which is why
 `CostMeterPlugin` exists in `issue_triage/plugins.py`.
 
 ## 3. A tuple-join is an OR-join
@@ -70,7 +70,7 @@ the model called the tool and the callback refused it. But session state is
 *inside* the trust boundary, and the run never stopped: the callback returned
 an error string, and the model was free to narrate around it.
 
-ADK has the real gate built in. I only found it by reading Google's own
+ADK includes a confirmation mechanism. I only found it by reading Google's own
 installed skill; the published docs don't cover it:
 
 ```python
@@ -118,11 +118,11 @@ reading `quotaValue` out of the 429:
 | `gemini-3.1-flash-lite` | 15 |
 | `gemini-3.5-flash` / `3.6-flash` / `3.8-flash` | 5 |
 
-Six LLM steps at 5 RPM is over a minute per triage. So the cheap single-label
-classifiers run on flash-lite, and only the steps where judgement matters may
-spend a slot on the slower model. `FAST_MODEL` / `SMART_MODEL` in `prompts.py`
-select which. Both default to flash-lite today; the split is there so the
-judgement steps can move by config alone.
+Seven model-backed stages at 5 RPM take over a minute before tool use adds
+another model call. The cheap single-label classifiers therefore run on
+flash-lite, while the stages where judgement matters may use the slower model.
+`FAST_MODEL` / `SMART_MODEL` in `prompts.py` select which. Both currently
+default to flash-lite; the split allows the judgement stages to move by config.
 
 `RateLimitPlugin` keeps one sliding window per model. A single shared counter
 would either throttle the fast model to the slow model's ceiling or let the slow
@@ -214,11 +214,10 @@ With temperature pinned, `kind` moves five points across three repeats,
 30-point swing in the first attempt was sampling noise from the unpinned
 temperature.
 
-The grounding effect is real and small: five points of `area`, with ranges that
-do not overlap. Every ablated repeat misses the same three issues and every
-grounded repeat the same one, which is what a deterministic prompt difference
-should look like. The three unchanged prompts stay inside their own spread, and
-this time I set them up as the control.
+The observed difference is five points of `area`, with no overlap between the
+three-run ranges. Every ablated repeat misses the same three issues and every
+grounded repeat the same one. The three unchanged prompts stay inside their own
+spread, and this time I set them up as the control.
 
 `priority` is the number to work on. It averages 38.5% in both configurations,
 identical in every grounded repeat and within five points in the ablated ones,
@@ -229,10 +228,10 @@ next" is about supplying that context.
 
 ## 7. Why I would not make these sub-agents A2A services
 
-These six agents share one session's state, run inside one request, and have
-one owner and one deploy. Putting a network boundary between them would buy
-nothing and would cost a serialisation format, a failure mode per hop, and six
-things to deploy. A2A is worth its complexity when an agent has a different
+These seven workflow agents share one session's state, run inside one request,
+and have one owner and one deploy. Putting a network boundary between them
+would add a serialisation format, a failure mode per hop, and seven things to
+deploy. A2A is useful when an agent has a different
 owner, deploy cadence, scaling profile, or trust boundary, and none of those
 applies here. I'd keep local composition until there is a deployment reason to
 cross the boundary.
@@ -246,10 +245,11 @@ pushes it through Cloud Build, and runs `adk api_server --trace_to_cloud`. It
 took three deploys to get a revision that served a triage, and each failure was
 a gap between what the tooling implies and what it does.
 
-In the first, the build succeeded and the revision never started. The revision
-runs as the default compute service account, which cannot read Secret Manager
-until it is granted the role. The error is clear once you find it, and
-`deploy.sh secret` now grants the role.
+In the first, the build succeeded and the revision never started. That version
+used an AI Studio key from Secret Manager, and the default compute service
+account could not read it. The tested service later moved to Vertex AI. The
+current deploy script follows that path and grants the runtime account Vertex
+AI and Cloud Trace permissions, so it no longer carries an API key.
 
 The container has no `gh`. The tool layer shelled out to the GitHub CLI, so the
 deployed agent could not fetch an issue. I rewrote it against the REST API over
@@ -281,6 +281,9 @@ triage, coordinator through intake, with real durations. The remaining twenty
 seconds of the request, the fan-out and four more agents, never arrived. There
 was no export error at any severity, and re-running with CPU always allocated
 ruled out CPU throttling. The span tree that did arrive is in the README.
+
+The service completed two triages behind IAM and was then torn down. There is
+no public endpoint.
 
 ### The free tier's daily cap
 
@@ -322,9 +325,11 @@ an error that says nothing about proxies. `issue_triage/.env` overrides it.
 
 ## Cost posture
 
-Everything here runs on the AI Studio free tier, keyed to a project with billing
-disabled. A key issued against a project with billing enabled auto-upgrades to a
-paid tier and bills per token.
+Local runs use the AI Studio free tier. API keys inherit their project&rsquo;s
+billing status; a key attached to a paid-tier project can incur usage charges
+once billing setup is complete. The repeated evaluation and optional Cloud Run
+deployment use billed Vertex AI because they do not fit the local free-tier
+quota model.
 
 The pricing page says Google uses free-tier prompts to improve its products, so
 `ALLOWED_REPOS` in `tools/github.py` hard-limits the agent to public

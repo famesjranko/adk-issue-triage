@@ -45,7 +45,7 @@ def known_labels() -> set[str]:
     result = list_labels()
     if "error" in result:
       raise RuntimeError(f"cannot load label vocabulary: {result['error']}")
-    _label_cache = {l["name"] for l in result["labels"]}
+    _label_cache = {label["name"] for label in result["labels"]}
   return _label_cache
 
 
@@ -56,7 +56,6 @@ def guard_tool_call(
   if tool.name != "apply_labels":
     return None
 
-  number = args.get("number")
   labels = args.get("labels") or []
 
   if len(labels) > MAX_LABELS:
@@ -86,4 +85,4 @@ def needs_confirmation(number: int, labels: list[str]) -> bool:
   someone's week.
   """
   del number  # policy depends on what is written, not which issue
-  return any(not l.startswith(LOW_RISK_PREFIXES) for l in labels)
+  return any(not label.startswith(LOW_RISK_PREFIXES) for label in labels)

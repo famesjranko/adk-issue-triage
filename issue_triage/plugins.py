@@ -84,9 +84,9 @@ class RateLimitPlugin(BasePlugin):
 class CostMeterPlugin(BasePlugin):
   """Accumulate token usage across every model call in a run.
 
-  Agents are easy to make accidentally expensive: a pipeline of six LlmAgents
-  costs six model calls per triage, and nothing in the agent code makes that
-  visible. This does.
+  Agents are easy to make accidentally expensive. This pipeline has seven
+  model-backed stages, while tool use brought the measured graph run to nine
+  model calls. Nothing in the agent wiring makes that cost visible; this does.
   """
 
   def __init__(self):

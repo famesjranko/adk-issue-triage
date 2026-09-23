@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Repeatable, observable walkthrough. Each step says what it proves and what to
+# Repeatable, observable walkthrough. Each step says what it shows and what to
 # watch for, then runs it. Steps are independent — run them in any order.
 #
 #   ./scripts/demo.sh            list the steps
@@ -9,16 +9,16 @@
 # ⚠️  Only one process may touch the API key at a time. The rate limiter is
 #     process-local, the free-tier quota is per project.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 if [ -t 1 ]; then W=$(tput cols 2>/dev/null || echo 100); else W=${COLUMNS:-100}; fi
 [ "$W" -gt 100 ] && W=100
 
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
   RESET=$'\033[0m'; BOLD=$'\033[1m'; MUTED=$'\033[2m'
-  CYAN=$'\033[36m'; GREEN=$'\033[32m'; AMBER=$'\033[33m'; BLUE=$'\033[34m'
+  CYAN=$'\033[36m'; GREEN=$'\033[32m'; AMBER=$'\033[33m'
 else
-  RESET=""; BOLD=""; MUTED=""; CYAN=""; GREEN=""; AMBER=""; BLUE=""
+  RESET=""; BOLD=""; MUTED=""; CYAN=""; GREEN=""; AMBER=""
 fi
 
 b() { printf '%s%s%s\n' "$BOLD$CYAN" "$*" "$RESET"; }
@@ -39,12 +39,12 @@ banner() {
   rule
 }
 
-hdr() {  # hdr <n> <title> <what it proves> <what to watch>
+hdr() {  # hdr <n> <title> <what it shows> <what to watch>
   printf '\n'
   printf '%s◆%s  %sSTEP %02d%s  %s%s%s\n' \
     "$CYAN" "$RESET" "$MUTED" "$1" "$RESET" "$BOLD" "$2" "$RESET"
   rule
-  printf '  %sPROVES%s  %s\n' "$CYAN" "$RESET" "$3"
+  printf '  %sSHOWS %s  %s\n' "$CYAN" "$RESET" "$3"
   printf '  %sWATCH %s  %s%s%s\n\n' "$AMBER" "$RESET" "$MUTED" "$4" "$RESET"
 }
 
@@ -232,21 +232,24 @@ case "${1:-}" in
   0|1|2|3|4|5|6|7|8|9) "step$1" ;;
   10) step10 ;;
   all) banner
-       quota_exhausted=0
+       model_blocked=""
        for n in 0 1 2 3 4 5 7 10; do
-         if [ "$quota_exhausted" -eq 1 ] && [[ "$n" =~ ^(4|5|10)$ ]]; then
-           skip "Step $n · Gemini daily quota exhausted"
+         if [ -n "$model_blocked" ] && [[ "$n" =~ ^(4|5|10)$ ]]; then
+           skip "Step $n · $model_blocked"
            continue
          fi
          "step$n"
          status=$?
-         if [ "$status" -eq 2 ] && [[ "$n" =~ ^(3|4|5|10)$ ]]; then
-           quota_exhausted=1
+         if [[ "$n" =~ ^(3|4|5|10)$ ]]; then
+           case "$status" in
+             2) model_blocked="Gemini daily quota exhausted" ;;
+             3) model_blocked="Gemini temporarily unavailable" ;;
+           esac
          fi
        done
        printf '\n'
-       if [ "$quota_exhausted" -eq 1 ]; then
-         warn "  DEMO PAUSED  ·  model quota exhausted; offline sections completed"
+       if [ -n "$model_blocked" ]; then
+         warn "  DEMO PAUSED  ·  $model_blocked; offline sections completed"
        else
          ok "Non-writing walkthrough complete"
        fi

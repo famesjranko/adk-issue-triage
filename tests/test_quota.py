@@ -1,4 +1,4 @@
-"""daily_quota_message() tells a per-day 429 apart from everything else.
+"""Model failure messages distinguish daily quota from a transient 503.
 
 The chains are built with ADK's own wrappers the way ADK raises them:
 Gemini raises `_ResourceExhaustedError(ce) from ce`, and a workflow node
@@ -15,7 +15,10 @@ from google.adk.models.google_llm import _ResourceExhaustedError
 from google.adk.workflow._errors import DynamicNodeFailError
 from google.genai.errors import ClientError, ServerError
 
-from issue_triage.quota import daily_quota_message  # noqa: E402
+from issue_triage.quota import (  # noqa: E402
+    daily_quota_message,
+    transient_unavailable_message,
+)
 
 MODEL = "gemini-3.1-flash-lite"
 
@@ -120,3 +123,34 @@ def test_non_429_is_not_the_daily_cap():
   assert daily_quota_message(wrapped(ServerError(503, {"error": {"message": "limit: 500"}}))) is None
   assert daily_quota_message(wrapped(ClientError(400, {"error": {"message": "limit: 500"}}))) is None
   assert daily_quota_message(RuntimeError("limit: 500")) is None
+
+
+def unavailable_503() -> ServerError:
+  return ServerError(503, {"error": {
+      "code": 503,
+      "status": "UNAVAILABLE",
+      "message": "The model is overloaded. Please try again later.",
+  }})
+
+
+def test_transient_unavailable_names_a_direct_503():
+  message = transient_unavailable_message(unavailable_503())
+  assert message is not None
+  assert "503 UNAVAILABLE" in message
+  assert "Retry" in message
+
+
+def test_transient_unavailable_found_through_dynamic_node_error_attribute():
+  message = transient_unavailable_message(detached(unavailable_503()))
+  assert message is not None and "temporarily overloaded" in message
+
+
+def test_transient_unavailable_found_inside_exception_group():
+  group = ExceptionGroup("parallel", [ValueError("x"), unavailable_503()])
+  assert transient_unavailable_message(group) is not None
+
+
+def test_other_server_failures_are_not_reported_as_transient_unavailable():
+  error = ServerError(500, {"error": {"code": 500, "message": "internal"}})
+  assert transient_unavailable_message(error) is None
+  assert transient_unavailable_message(RuntimeError("503 UNAVAILABLE")) is None

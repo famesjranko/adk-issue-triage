@@ -1,4 +1,11 @@
-<title>Triage Agent Anatomy</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triage agent anatomy · Andrew McDonald</title>
+<meta name="description" content="A Google ADK issue-triage workflow tested on real MusicMeta issues, with parallel analysis, human approval for sensitive writes, and per-field evaluation.">
+<link rel="canonical" href="https://famesjranko.github.io/adk-issue-triage/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -142,6 +149,9 @@ a:focus-visible, button:focus-visible {
   outline: 2px solid var(--code);
   outline-offset: 2px;
 }
+
+.hero-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-size: 0.9375rem; }
+footer { padding-top: 3.5rem; font-size: 0.875rem; color: var(--muted); }
 
 /* ---------- structure ---------- */
 
@@ -353,22 +363,6 @@ td.flag { color: var(--halt); font-weight: 600; }
 
 tr.total td { font-weight: 600; background: var(--surface-2); }
 
-/* ---------- callout ---------- */
-
-.callout {
-  border: 1px solid var(--line-2);
-  border-left: 3px solid var(--halt);
-  background: var(--halt-bg);
-  border-radius: var(--radius);
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.callout .panel-title { color: var(--halt); }
-.callout p { color: var(--ink-2); font-size: 0.9375rem; }
-
 /* ---------- todo ---------- */
 
 .todo { display: flex; flex-direction: column; gap: 0; }
@@ -477,7 +471,12 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
   font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
 }
 .swatch { width: 0.7rem; height: 0.7rem; border-radius: 2px; }
+.swatch.is-code { background: var(--code); }
+.swatch.is-model { background: var(--model); }
+.swatch.is-halt { background: var(--halt); }
 </style>
+</head>
+<body>
 
 <div class="wrap">
 
@@ -485,15 +484,26 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
   <p class="eyebrow">Google ADK &middot; built 3 September 2026</p>
   <h1>Triage agent anatomy</h1>
   <p class="lede">
-    An agent that reads a GitHub issue and predicts the labels a human already
-    put on it. Because those labels exist, I can score every prediction against
-    answers nobody made up for the demo. This page covers what each layer does,
-    the commands to watch it work, and what is still unfinished.
+    I built this agent to triage issues from my public
+    <a href="https://github.com/famesjranko/musicmeta">MusicMeta repository</a>.
+    It reads an issue and its comments, predicts labels, then compares them with
+    labels people had already applied. Those labels are withheld from the agent;
+    the 39 gradeable issues were not written for this demo.
+  </p>
+  <p class="small">
+    The diagrams follow one run, from GitHub reads through the graph and its
+    approval gate. The evaluation below shows where its predictions held up
+    and where they did not.
+  </p>
+  <p class="hero-links">
+    <a href="https://github.com/famesjranko/adk-issue-triage">Source code</a>
+    <a href="https://github.com/famesjranko/adk-issue-triage#quick-start">Run it locally</a>
+    <a href="https://github.com/famesjranko/musicmeta/issues/231">Issue 231</a>
   </p>
   <div class="legend">
-    <span><i class="swatch" style="background:var(--code)"></i>deterministic code</span>
-    <span><i class="swatch" style="background:var(--model)"></i>probabilistic model</span>
-    <span><i class="swatch" style="background:var(--halt)"></i>halts the run</span>
+    <span><i class="swatch is-code"></i>deterministic code</span>
+    <span><i class="swatch is-model"></i>probabilistic model</span>
+    <span><i class="swatch is-halt"></i>halts the run</span>
   </div>
 </header>
 
@@ -503,15 +513,17 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
   <p class="eyebrow">The design</p>
   <h2>Where the model runs and where code runs</h2>
   <p>
-    Every triage runs the same six steps: fetch the issue, analyse three things
-    that don&rsquo;t depend on each other, assign a priority, judge readiness.
-    The order is the same whatever the issue says, so it is
-    <em>encoded as a graph</em> in code and the model never has to work it out from a prompt.
+    Every triage follows the same route: fetch the issue, analyse three things
+    that don&rsquo;t depend on each other, assign a priority, judge readiness,
+    then assemble the result. The order is the same whatever the issue says,
+    so it is <em>encoded as a graph</em> in code and the model never has to
+    work it out from a prompt.
   </p>
   <p>
-    Only the judgements are model calls. Authorisation follows the same split:
-    the model can <em>propose</em> a write to GitHub, and code decides whether
-    it happens.
+    The seven stages use model-backed agents; intake and duplicate search also
+    call tools. The graph produces a result; a separate coordinator handles
+    any later request to write labels. Its model can <em>propose</em> a GitHub
+    write, and code decides whether it happens.
   </p>
 </section>
 
@@ -587,10 +599,10 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       </svg>
     </div>
     <figcaption>
-      <b>The pipeline: seven model calls and one piece of control flow.</b>
-      Each agent writes exactly one key into session state, and the next step
-      reads it by name. The middle three run concurrently because none of them
-      reads another&rsquo;s output; the graph encodes that, so no prompt has to ask for it.
+      <b>The pipeline: seven model-backed agents connected by a graph.</b>
+      Each agent writes its result to session state for later stages to use.
+      The middle three run concurrently because none of them reads
+      another&rsquo;s output; a join waits for all three before priority runs.
     </figcaption>
   </figure>
 </section>
@@ -598,8 +610,8 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Layer by layer</p>
-    <h2>What one request passes through</h2>
-    <p class="small muted">Top to bottom is the order a request travels.</p>
+    <h2>Where the controls live</h2>
+    <p class="small muted">The last layer covers a separate coordinator run for label writes.</p>
   </div>
 
   <div class="spine">
@@ -622,8 +634,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
           Registered once on the Runner, so they see every agent. There are two.
           A rate limiter keeps one sliding window <em>per model</em>, because the
           free tier&rsquo;s quota is per model and the fan-out fires three calls at
-          once. A token meter counts what the six model steps per triage cost,
-          since nothing else in the code shows it.
+          once. A token meter counts model requests across the run.
         </p>
         <p class="file">issue_triage/plugins.py</p>
       </div>
@@ -645,10 +656,10 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="layer-name">Agents<span class="tag is-model">judgement</span></div>
       <div class="layer-body">
         <p>
-          Seven small model calls with one job each, and each writes one value
-          to session state. The cheap classifiers run on flash-lite. The slower
-          model is capped at 5 requests per minute, so only the steps that need
-          real judgement spend a slot on it.
+          Seven agents have one job each and write their results to session
+          state. A tool call can make an agent call the model again: the measured
+          graph run made nine model requests. Classifiers and judgement steps
+          have separate model settings; both currently default to flash-lite.
         </p>
         <p class="file">issue_triage/prompts.py</p>
       </div>
@@ -667,13 +678,15 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
     </div>
 
     <div class="layer">
-      <div class="layer-name">Guards<span class="tag is-halt">refuse &amp; suspend</span></div>
+      <div class="layer-name">Write guards<span class="tag is-halt">coordinator</span></div>
       <div class="layer-body">
         <p>
-          These do two separate jobs. <strong>Validation</strong> rejects any label that doesn&rsquo;t exist in the repository, without asking the model. <strong>Authorisation</strong> suspends the whole
-          run until a human confirms.
+          The separate <code>triage_coordinator</code> handles label writes,
+          outside the graph Workflow. Its validation callback refuses unknown
+          labels. Its confirmation policy suspends a write containing any
+          non-<code>area/*</code> label; an area-only write proceeds.
         </p>
-        <p class="file">issue_triage/callbacks.py</p>
+        <p class="file">issue_triage/callbacks.py · issue_triage/agent.py</p>
       </div>
     </div>
 
@@ -682,7 +695,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
   <figure>
     <div class="fig-frame">
       <svg viewBox="0 0 720 330" role="img"
-           aria-label="Where each hook intercepts. A model call leaves an agent and passes through the rate limiter before reaching Gemini, and back through the cost meter on return. A tool call passes through the validation callback, then the confirmation check, before reaching GitHub.">
+           aria-label="Hooks in the separate coordinator run. A model call passes through the rate limiter before reaching Gemini and the cost meter on return. A proposed GitHub label write passes through the validation callback and conditional confirmation policy. The graph workflow does not write labels.">
         <defs>
           <marker id="ah2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
             <polygon class="d-head" points="0,1 8,4 0,7"/>
@@ -697,8 +710,8 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 
         <!-- the agent, centre -->
         <rect class="d-box model" x="284" y="140" width="152" height="52" rx="3"/>
-        <text class="d-t" x="360" y="163" text-anchor="middle">any LlmAgent</text>
-        <text class="d-t sm" x="360" y="179" text-anchor="middle">in the graph</text>
+        <text class="d-t" x="360" y="163" text-anchor="middle">triage_coordinator</text>
+        <text class="d-t sm" x="360" y="179" text-anchor="middle">separate from graph</text>
 
         <!-- MODEL PATH (left) -->
         <text class="d-t lbl" x="18" y="26">Model path — Runner plugins</text>
@@ -745,19 +758,21 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
         <line class="d-line" x1="544" y1="180" x2="544" y2="222" marker-end="url(#ah2)"/>
 
         <path class="d-line halt" d="M626 160 H672 V300 H360 V198" marker-end="url(#ah2h)"/>
-        <text class="d-t sm halt" x="516" y="316">suspends the whole run</text>
+        <text class="d-t sm halt" x="516" y="316">non-area/*: run suspends</text>
 
         <text class="d-t sm" x="556" y="112">refuses here</text>
-        <text class="d-t sm" x="556" y="212">or executes</text>
+        <text class="d-t sm" x="556" y="212">area-only proceeds</text>
 
         <!-- foot note -->
         <text class="d-t lbl" x="360" y="122" text-anchor="middle">proposes</text>
       </svg>
     </div>
     <figcaption>
-      <b>The code around each model call and tool call.</b> The agent controls
-      none of it. The rate limiter sleeps before a request goes out and the cost
-      meter counts on the way back. The two tool guards behave differently by design: validation <em>refuses and returns</em>, while confirmation <em>suspends the run</em> and nothing downstream executes until a human answers.
+      <b>The coordinator&rsquo;s model and write paths.</b> This is a separate run
+      from the graph shown above. The rate limiter sleeps before a model
+      request and the cost meter counts on the way back. For label writes,
+      validation can refuse the call; confirmation suspends it only when the
+      proposed labels include something other than <code>area/*</code>.
     </figcaption>
   </figure>
 </section>
@@ -836,7 +851,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 
         <!-- serial bracket -->
         <line class="d-line" x1="506" y1="188" x2="506" y2="270"/>
-        <text class="d-t sm" x="500" y="288" text-anchor="end">strictly serial &mdash; each reads what the last one wrote</text>
+        <text class="d-t sm" x="500" y="288" text-anchor="end">the graph runs these stages in order</text>
 
         <text class="d-t lbl" x="150" y="316">22.2s total &mdash; the JSON lands</text>
       </svg>
@@ -844,16 +859,18 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
     <figcaption>
       <b>Issue 231, one bar per agent.</b> Each bar is placed at the second
       that agent finished. The three stacked bars are the fan-out, and they
-      start together because nothing makes them wait. The staircase after them runs in series, since each step reads what the one before it wrote. <code>dupe_agent</code> takes longest only because it makes a
+      start together because nothing makes them wait. The graph runs the
+      stages after the join in order; they do not all depend on the preceding
+      stage&rsquo;s output. <code>dupe_agent</code> takes longest because it makes a
       tool call the other two don&rsquo;t.
     </figcaption>
   </figure>
 
   <div class="col stack">
     <p>
-      Each agent&rsquo;s entire output is <em>one word</em>. With no prose to show, the dev UI looks sparse. The seven short answers
-      accumulate in a dictionary in session state, and that dictionary is the
-      result.
+      Most classification outputs are short labels, so the dev UI can look
+      sparse. Intake records the issue, the analysts and judgement steps add
+      their results to session state, and synthesis returns the JSON.
     </p>
   </div>
 
@@ -871,8 +888,8 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
     <p>
       Two right and one wrong, and the table shows <em>which</em>. It called the
       Room bump <code>p3</code>; the human who filed it said <code>p2</code>.
-      Because each field is scored on its own line, I can tell the priority
-      prompt needs work and the area prompt doesn&rsquo;t.
+      One run cannot establish which prompt is generally stronger. The full
+      evaluation below shows that priority is the weakest field.
     </p>
     <p class="small muted">
       <code>./scripts/demo.sh 10</code> prints this for the newest
@@ -888,13 +905,15 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
     <h2>Eleven steps, in any order</h2>
     <p class="small muted">
       Each prints what it proves and what to look for before it runs.
-      Only one process may touch the API key at a time.
+      Steps 4, 5 and 10 give a short tour. Model steps need your own Gemini
+      API key in the default local setup; run one process on that key at a time.
     </p>
   </div>
 
   <pre><span class="d">$</span> <b>./scripts/demo.sh</b>          <span class="d"># list</span>
 <span class="d">$</span> <b>./scripts/demo.sh 4</b>        <span class="d"># run one</span>
-<span class="d">$</span> <b>./scripts/demo.sh all</b>      <span class="d"># everything safe and quick</span>
+<span class="d">$</span> <b>./scripts/demo.sh all</b>      <span class="d"># non-writing steps</span>
+<span class="d">$</span> <b>TRIAGE_DATA_SOURCE=snapshot ./scripts/demo.sh 4</b> <span class="d"># fixed public-repo input</span>
 
 <span class="d">first pass, about two minutes:</span>  <b>0 1 2 4 5 10</b></pre>
 
@@ -922,7 +941,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">2</div>
       <div class="run-body">
         <p class="run-cmd">The deterministic guards</p>
-        <p class="run-what">Eight tests that call the guards directly. The guards are plain code and get ordinary unit tests.</p>
+        <p class="run-what">Unit tests exercise the guards without a model.</p>
         <p class="run-meta free">no model calls</p>
       </div>
     </div>
@@ -967,7 +986,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">7</div>
       <div class="run-body">
         <p class="run-cmd">Build the eval set from real labels</p>
-        <p class="run-what">39 gradeable cases out of 42 issues. The other 3 have no <code>area/*</code> or <code>priority/*</code> label and are left out.</p>
+        <p class="run-what">39 gradeable cases out of 42 issues. Snapshot mode reads the committed public-data snapshot; a live rebuild fetches public MusicMeta issues.</p>
         <p class="run-meta free">no model calls</p>
       </div>
     </div>
@@ -1116,7 +1135,7 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Finding from steps 3 and 4</p>
-    <h2>The graph did the same work for a quarter of the tokens</h2>
+    <h2>One graph run used a quarter of the prompt tokens</h2>
   </div>
 
   <div class="table-wrap">
@@ -1186,8 +1205,8 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 
   <div class="col stack">
     <p>
-      The difference comes entirely from how <code>SequentialAgent</code> and the
-      graph pass context, and no tuning was involved. Over six model steps it compounds, and nothing in the
+      The difference comes from how <code>SequentialAgent</code> and the
+      graph pass context, and no tuning was involved. Across the pipeline it compounds, and nothing in the
       agent code makes it visible, which is why I added the token meter.
     </p>
     <p class="small muted">
@@ -1274,7 +1293,7 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Finding from step 8</p>
-    <h2>The grounding ablation measured noise</h2>
+    <h2>The first ablation failed its own control</h2>
   </div>
 
   <div class="col">
@@ -1304,26 +1323,49 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
       Read quickly, the table says removing the grounding cost 8 points. The data
       doesn&rsquo;t support that. <code>kind</code> moved <strong>thirty
       points</strong> on a prompt that was byte-for-byte identical in both runs.
-      With 12 cases, run-to-run variance is larger than the effect I was
-      measuring, and the 8-point <code>area</code> delta is one issue changing its
-      mind.
+      In this 12-case run, that variation was larger than the apparent
+      <code>area</code> effect: an 8-point change meant one issue changed its
+      answer.
     </p>
     <p>
-      I only caught it because the scorer grades each field separately, so the
-      three unchanged prompts in the same table worked as an accidental control.
-      The aggregate went from 64.9% to 67.6%, which looks like mild noise and says nothing on its own. A single similarity score would have hidden
-      the problem completely.
+      Per-field scores made that instability visible. The overall score moved
+      only from 64.9% to 67.6%, which would have been easy to overlook on its own.
     </p>
   </div>
 
-  <div class="callout col">
-    <p class="panel-title">What I got wrong</p>
+  <div class="col stack-sm">
+    <p class="eyebrow">The rerun</p>
+    <h3>Grounding helped area classification</h3>
+    <p class="small muted">I pinned <code>temperature</code> to 0 and ran all 39 issues three times per configuration. The table shows mean accuracy and the observed range; fields without a human label are not graded.</p>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Grounded</th><th>Ablated</th><th>n</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>area</code></td><td class="num win">97.4% (97.4–97.4)</td><td class="num">92.3% (92.3–92.3)</td><td class="num">39</td></tr>
+        <tr><td><code>kind</code></td><td class="num">65.1% (61.9–66.7)</td><td class="num">63.5% (61.9–66.7)</td><td class="num">21</td></tr>
+        <tr><td><code>priority</code></td><td class="num flag">38.5% (38.5–38.5)</td><td class="num">38.5% (35.9–41.0)</td><td class="num">39</td></tr>
+        <tr><td><code>readiness</code></td><td class="num">56.1% (52.6–63.2)</td><td class="num">57.9% (57.9–57.9)</td><td class="num">19</td></tr>
+        <tr class="total"><td>overall</td><td class="num">65.5% (64.4–66.9)</td><td class="num">63.8% (62.7–65.3)</td><td class="num">118</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col stack">
     <p>
-      I designed the ablation, got a delta in the direction I expected, and nearly
-      wrote it down as a result. Nobody planned a control; it was there by
-      accident. <code>temperature</code> is now pinned to 0, as it should have
-      been from the first run, though that does nothing about a sample size this
-      small.
+      Grounding improved <code>area</code> by 5.1 points in this set. Every
+      grounded repeat missed the same one issue, and every ablated repeat missed
+      the same three. Priority averaged 38.5% in both configurations.
+      The module map helped identify an area; it did not supply the context
+      behind the maintainer&rsquo;s priority choice.
+    </p>
+    <p class="small muted">
+      The <a href="https://github.com/famesjranko/adk-issue-triage/tree/main/eval/results">per-case results</a>
+      and <a href="https://github.com/famesjranko/adk-issue-triage/blob/main/NOTES.md">build notes</a>
+      record the full experiment.
     </p>
   </div>
 </section>
@@ -1331,7 +1373,7 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Status</p>
-    <h2>What is finished and what isn&rsquo;t</h2>
+    <h2>What runs today</h2>
   </div>
 
   <div class="todo col">
@@ -1339,60 +1381,26 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
     <div class="todo-item">
       <div class="box done"></div>
       <div class="todo-body">
-        <p class="t">Tools, guards, both topologies, plugins, eval set, scorer</p>
-        <p class="d">All running and verified. Steps 0&ndash;8.</p>
+        <p class="t">Local walkthrough and evaluation</p>
+        <p class="d">The tools, guards, both topologies and scorer run locally.
+          Public MusicMeta reads need no GitHub token; the committed snapshot
+          also supports offline repository reads. Model steps still need a
+          Gemini API key in the default local setup. The Cloud Run test used
+          Vertex AI service-account credentials instead.
+          <a href="https://github.com/famesjranko/adk-issue-triage#quick-start">Quick start</a>.</p>
       </div>
     </div>
 
     <div class="todo-item">
       <div class="box done"></div>
       <div class="todo-body">
-        <p class="t"><code>agents-cli</code> skills installed</p>
+        <p class="t">Cloud Run deployment tested behind IAM</p>
         <p class="d">
-          Seven ADK skills from google/agents-cli, pinned in
-          <code>skills-lock.json</code> and installed at workspace scope, so nothing global changed. The <code>Workflow</code> API turned up in Google&rsquo;s own reference, while the published docs still describe the deprecated one.
-        </p>
-      </div>
-    </div>
-
-    <div class="todo-item">
-      <div class="box done"></div>
-      <div class="todo-body">
-        <p class="t">Read a real trace in <code>adk web</code></p>
-        <p class="d">
-          Done; the worked example above is one of those runs. Step 10
-          decodes any of them into the timeline, which beats reading
-          30 raw events.
-        </p>
-      </div>
-    </div>
-
-    <div class="todo-item">
-      <div class="box done"></div>
-      <div class="todo-body">
-        <p class="t">Deploy to Cloud Run, read the span tree in Cloud Trace</p>
-        <p class="d">
-          Done, on the third deploy. The service ran complete triages behind
-          IAM auth, and Cloud Trace holds the span tree for one of them, from the
-          coordinator through intake, with real durations. The later spans never
-          arrived, and the README says so. <code>deploy.sh</code> now handles each
-          of the three failures, and the notes have the
-          detail.
-        </p>
-      </div>
-    </div>
-
-    <div class="todo-item">
-      <div class="box done"></div>
-      <div class="todo-body">
-        <p class="t">Re-run the eval so it actually measures something</p>
-        <p class="d">
-          Done: all 39 cases, three repeats per configuration, temperature
-          pinned. The 30-point swing came from temperature. With it pinned, the
-          grounding is worth 5.1 points of <code>area</code> and the ranges don&rsquo;t
-          overlap. <code>priority</code> averages 38.5% in both
-          configurations, which makes it the next experiment. The tables are in the
-          README and notes, and the per-case results are committed.
+          Two complete triages ran using Vertex AI. Cloud Trace captured the
+          coordinator and intake spans but not the later workflow spans.
+          There is no public interactive demo; the
+          <a href="https://github.com/famesjranko/adk-issue-triage#deploy">deployment notes</a>
+          record the partial trace.
         </p>
       </div>
     </div>
@@ -1403,25 +1411,40 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Cost and data</p>
-    <h2>Two rules for the API key</h2>
+    <h2>What runs on the free tier and what runs on Vertex AI</h2>
   </div>
 
   <div class="col stack">
     <div class="panel is-halt">
-      <p class="panel-title">The API key must stay on the unbilled project</p>
+      <p class="panel-title">Local demo: AI Studio free tier</p>
       <p>
-        The key is issued against a project with billing disabled, and that is what keeps it on the free tier. On any project with billing enabled it would
-        auto-upgrade to a paid tier and bill per token. Google also uses free-tier
-        prompts to improve its products, so the tool layer limits the agent to
-        public repositories, and that limit is enforced in code.
+        The local demo uses a Gemini API key on a free-tier project. A key
+        attached to a paid-tier project can incur usage charges once billing
+        setup is complete. Google may use content submitted through unpaid
+        services to improve its products, so the tool layer enforces a
+        public-repository allowlist in code.
+        <a href="https://ai.google.dev/gemini-api/docs/billing">Billing guide</a>
+        &middot; <a href="https://ai.google.dev/gemini-api/terms">data terms</a>.
+      </p>
+    </div>
+
+    <div class="panel is-code">
+      <p class="panel-title">Full evaluation and Cloud Run: Vertex AI</p>
+      <p>
+        The 39-issue evaluation with three repeats per configuration exceeded
+        the free tier&rsquo;s daily request cap, so I ran it on billed Vertex AI.
+        The Cloud Run deployment also used Vertex AI through its service
+        account. Neither used the local Gemini API key.
       </p>
     </div>
 
     <div class="panel is-halt">
-      <p class="panel-title">One process on the key at a time</p>
+      <p class="panel-title">One local process on the key at a time</p>
       <p>
-        The rate limiter keeps its window in memory, but the quota is per project. An
-        eval run died part-way through because I ran a single triage alongside it. Each process believed it was under 15 requests per minute, and together they were over. The limiter leaves headroom for clock skew, and that headroom can&rsquo;t absorb a second process.
+        The local rate limiter keeps its window in memory, but the AI Studio
+        quota is shared by the project. An earlier free-tier eval run exceeded
+        that quota when I ran a separate triage alongside it. Each process
+        believed it was under the limit; their combined traffic was not.
       </p>
     </div>
   </div>
@@ -1430,7 +1453,7 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Reference</p>
-    <h2>Versions, limits and one gotcha</h2>
+    <h2>Versions and limits</h2>
   </div>
 
   <div class="col">
@@ -1440,7 +1463,6 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
       <dt>flash-lite</dt><dd>15 requests/min on the free tier</dd>
       <dt>flash</dt><dd>5 requests/min, and <code>3.8-flash</code> returned 503 roughly one run in three</dd>
       <dt>ground truth</dt><dd>42 issues, 39 gradeable, 19 with a readiness label</dd>
-      <dt>gotcha</dt><dd>this machine&rsquo;s <code>NO_PROXY</code> contains <code>::1</code>, which httpx cannot parse, so every genai client died with <code>InvalidURL: Invalid port: ':'</code>. Overridden in <code>.env</code>.</dd>
     </dl>
   </div>
 </section>
@@ -1457,4 +1479,7 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
   </p>
 </section>
 
+<footer><a href="https://andrewjmcdonald.com/">Andrew McDonald</a> · <a href="https://github.com/famesjranko/adk-issue-triage">Source code</a></footer>
 </div>
+</body>
+</html>

@@ -4,16 +4,16 @@
 
 [![Google ADK](https://img.shields.io/badge/Google_ADK-2.8.0-%234285F4?logo=google)](https://github.com/google/adk-python)
 [![Python](https://img.shields.io/badge/Python-3.13-%233776AB?logo=python&logoColor=white)](https://www.python.org)
-[![Gemini](https://img.shields.io/badge/Gemini-free_tier-%238E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/gemini-api/docs/rate-limits)
+[![Gemini](https://img.shields.io/badge/Gemini-AI_Studio_%2B_Vertex_AI-%238E75B2?logo=googlegemini&logoColor=white)](https://ai.google.dev/gemini-api/docs)
 [![Eval set](https://img.shields.io/badge/eval_set-39_human_labelled_issues-brightgreen)](eval/README.md)
 [![Tests](https://github.com/famesjranko/adk-issue-triage/actions/workflows/test.yml/badge.svg)](https://github.com/famesjranko/adk-issue-triage/actions/workflows/test.yml)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 </div>
 
-A Google ADK agent that triages GitHub issues on [famesjranko/musicmeta](https://github.com/famesjranko/musicmeta). It reads an issue, predicts its `kind`, `area/*`, `priority/*` and readiness, and applies the labels. Writes go through a confirmation gate that suspends the run, and nothing the model says can resume it. The repository already carries **39 human-applied labels** that weren't made for this demo, and the eval set is built from them.
+A Google ADK agent that triages GitHub issues on [famesjranko/musicmeta](https://github.com/famesjranko/musicmeta). It reads an issue, predicts its `kind`, `area/*`, `priority/*` and readiness, and can apply the labels after approval. A sensitive write suspends the run; resuming it requires a structured confirmation from outside the model conversation. The evaluation uses **39 existing human-applied labels** from MusicMeta, with those labels removed before the model sees each issue.
 
-I implemented the same six-step pipeline twice, once with `SequentialAgent` + `ParallelAgent`, which are deprecated in ADK 2.8, and once with the graph `Workflow` that replaces them, so the two runtimes can be compared on identical work.
+I implemented the same seven-stage pipeline twice: once with `SequentialAgent` + `ParallelAgent`, which are deprecated in ADK 2.8, and once with the graph `Workflow` that replaces them. This gives the two runtimes identical work to perform.
 
 **[Read the annotated walkthrough](https://famesjranko.github.io/adk-issue-triage/)** for the diagrams and findings, or run `./scripts/demo.sh` to watch it happen locally.
 
@@ -21,10 +21,12 @@ I implemented the same six-step pipeline twice, once with `SequentialAgent` + `P
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/pipeline-dark.svg">
-  <img alt="START feeds intake_agent, which writes state issue. That fans out to kind_agent, area_agent and dupe_agent running concurrently. All three must reach a JoinNode before priority_agent runs, then readiness_agent. A write through apply_labels is gated and suspends the run." src="docs/assets/pipeline.svg" width="100%">
+  <img alt="Intake fetches the issue, then kind, area and duplicate analysis run concurrently. A JoinNode waits for all three before priority, readiness and synthesis run in order." src="docs/assets/pipeline.svg" width="100%">
 </picture>
 
-The pipeline fetches the issue, analyses three independent things, assigns a priority and judges readiness. That order is the same for every issue, so it is encoded as graph edges and the model never has to work it out per request. Only the judgements are model calls. Authorisation is handled the same way: the model can propose a write to GitHub, and code decides whether it happens.
+The pipeline fetches and summarises the issue, analyses three independent questions, assigns priority, judges readiness and returns JSON. The order is the same for every issue, so graph edges carry it. Seven model-backed stages made nine model calls in the measured graph run because the tool-using stages return to the model after each tool call.
+
+The graph returns a proposed result. A separate coordinator handles any later request to write labels, and code decides whether that write executes or suspends for approval.
 
 ## One real run
 
@@ -53,11 +55,11 @@ $ ./scripts/demo.sh 10
   2/3 fields match the human labels
 ```
 
-Area and readiness match the human labels and priority doesn't: the model said p3 where a person had applied p2. Because each field is scored separately, the miss points straight at the priority prompt. A single per-response score would report 2/3 without saying which field missed.
+Area and readiness match the human labels; priority does not. One case cannot diagnose the prompt, but it identifies the field to examine. The repeated evaluation below confirms that priority is the weakest field. A single response score would report 2/3 without preserving that distinction.
 
 ## Watch it run
 
-`./scripts/demo.sh` lists eleven steps. Each prints what it proves and what to look for before it runs. A first pass of `0 1 2 4 5 10` takes about two minutes.
+`./scripts/demo.sh` lists eleven independent steps. Each describes the observation it is set up to make before it runs. A first pass of `0 1 2 4 5 10` takes about two minutes.
 
 | # | Step | Cost |
 |---|------|------|
@@ -86,9 +88,9 @@ The long form of each is in [NOTES.md](NOTES.md).
 
 `SequentialAgent`, `ParallelAgent` and `LoopAgent` are all deprecated in ADK 2.8 in favour of a graph `Workflow`. `adk.dev` still documents only the old API; I found the replacement in Google's own installed skill. A `Workflow` also cannot yet be a sub-agent of an `LlmAgent`, which makes migrating to it more work.
 
-### Token use
+### Token use in one comparison
 
-The graph did the same work for a quarter of the prompt tokens.
+The graph used roughly a quarter of the prompt tokens for the same work.
 
 | Topology | Model calls | Prompt tokens | Wall clock |
 |---|---|---|---|
@@ -114,7 +116,7 @@ While the run is suspended the model is not running, so no sentence in the conve
 
 ### Rate limits
 
-Free-tier rate limits are set per model. I measured them on 2026-09-03 by firing 25 concurrent requests and reading `quotaValue` out of the 429: `gemini-3.1-flash-lite` allows 15 req/min, and `gemini-3.5/3.6/3.8-flash` allow 5. Six model steps at 5 req/min is over a minute per triage, so the classifiers and the judgement steps read separate `FAST_MODEL` / `SMART_MODEL` settings. Both currently default to flash-lite. With the split in place I can move the judgement steps to a slower model by config alone once the quota allows it.
+Free-tier rate limits are set per model. I measured them on 2026-09-03 by firing 25 concurrent requests and reading `quotaValue` out of the 429: `gemini-3.1-flash-lite` allows 15 req/min, and `gemini-3.5/3.6/3.8-flash` allow 5. Seven model-backed stages at 5 req/min take over a minute even before a tool causes another model call. The classifiers and judgement stages therefore read separate `FAST_MODEL` / `SMART_MODEL` settings. Both currently default to flash-lite; the split allows the judgement stages to move to a slower model by configuration.
 
 ### The grounding ablation
 
@@ -128,11 +130,13 @@ The first ablation, at 12 cases, removed the repository module map from the `are
 | `readiness` | 56.1% (52.6–63.2) | 57.9% (57.9–57.9) | 19 |
 | overall | 65.5% (64.4–66.9) | 63.8% (62.7–65.3) | 118 |
 
-The grounding is worth 5.1 points of `area` accuracy, and the ranges do not touch: every ablated repeat misses the same three issues, and every grounded repeat misses the same one. The three unchanged prompts sit inside their own spread. In the first attempt they were a control only by accident. `priority`, at 38.5% in both configurations, is the weakest field. Variance doesn't account for it and neither does grounding. The human labels encode context the issue text doesn't carry, and supplying that context is the next experiment in [NOTES.md](NOTES.md).
+Grounding adds 5.1 points of `area` accuracy in these runs. Every ablated repeat misses the same three issues, while every grounded repeat misses the same one. The three unchanged prompts stay inside their own spread. `priority`, at 38.5% in both configurations, is the weakest field. The human labels encode context that the issue text does not carry, and supplying that context is the next experiment in [NOTES.md](NOTES.md).
 
 ## Quick start
 
-Requires an AI Studio API key on a project with **billing disabled**. A key issued against a billed project auto-upgrades to a paid tier and bills per token.
+The default local setup uses an AI Studio API key on a free-tier project. API
+keys inherit their project's billing status; a key attached to a paid-tier
+project can incur usage charges once billing setup is complete.
 
 ```bash
 uv sync
@@ -191,13 +195,12 @@ The ablation removes the repository module map from one prompt and nothing else.
 
 ```bash
 export PROJECT=<your-gcp-project>
-./scripts/deploy.sh enable      # Cloud Run, Cloud Trace, Secret Manager
-./scripts/deploy.sh secret      # push the key without it reaching argv; grant the runtime account
-./scripts/deploy.sh deploy      # --trace_to_cloud, IAM-only, ADK version pinned to local
+./scripts/deploy.sh enable      # Cloud Run, Cloud Trace, Vertex AI, runtime IAM
+./scripts/deploy.sh deploy      # billed Vertex AI, IAM-only, ADK version pinned to local
 ./scripts/deploy.sh url
 ```
 
-Deployed on 2026-09-23. The service ran two complete seven-agent triages, and this is the span tree Cloud Trace recorded for one of them, offsets from the start of the request:
+I deployed the service behind IAM and ran two complete triages on Vertex AI. It has since been torn down, so there is no public endpoint. Cloud Trace recorded this partial span tree for one request, with offsets from its start:
 
 ```
   0.0s  invocation  (7.1s)
@@ -211,11 +214,11 @@ Deployed on 2026-09-23. The service ran two complete seven-agent triages, and th
   6.5s        call_llm → generate_content  (0.6s)
 ```
 
-The trace stops there. The request ran for another twenty seconds through the fan-out and four more agents, all of which returned, but none of those spans reached Cloud Trace within half an hour, and nothing at warning level showed in the logs. I haven't found the cause.
+The trace stops there. The request ran for another twenty seconds through the fan-out and four more agents, all of which returned, but their spans did not reach Cloud Trace. The logs contained no warning from the exporter, and I have not found the cause.
 
-Getting to a healthy revision took three deploys, and `deploy.sh` now handles each failure: the runtime service account needs the secret-accessor role or the build succeeds and the revision never starts; the generated Dockerfile sets an enterprise flag that outranks `GOOGLE_GENAI_USE_VERTEXAI`; and `--trace_to_cloud` is a silent no-op without `GOOGLE_CLOUD_PROJECT`. The agent folder also carries a `.gcloudignore`. The deploy copies that folder and only honours an ignore file inside it, so without one `.env` ends up in the image.
+Deployment exposed three assumptions that the local run had hidden. The generated image has no `gh` executable, so repository tools now use the GitHub REST API. The generated Dockerfile's enterprise flag controls the Vertex backend, so the deploy script sets that flag explicitly. Cloud tracing also requires `GOOGLE_CLOUD_PROJECT`; without it, `--trace_to_cloud` logs a warning and continues without exporting spans.
 
-The service runs against Vertex AI, because a demo service on a public repo cannot share a per-project free-tier quota with local runs without the two 429-ing each other. Cloud Run scales to zero, so the service itself costs nothing idle. Teardown is deliberately not scripted; the command is in the header of `deploy.sh`.
+The agent folder contains its own `.gcloudignore` because ADK deploys that folder rather than the repository root. The checked-in script uses billed Vertex AI so a deployed service does not share the AI Studio quota used by local runs. Cloud Run scales to zero, and teardown remains a deliberate manual command documented in the script header.
 
 ## Layout
 
@@ -238,6 +241,6 @@ The service runs against Vertex AI, because a demo service on a public repo cann
 
 ## Cost and data posture
 
-Development runs on the AI Studio free tier. The pricing page says Google uses free-tier prompts to improve its products, so `ALLOWED_REPOS` in [`tools/github.py`](issue_triage/tools/github.py) hard-limits the agent to public repositories, in code. Local runs and the demo steps stay on the free tier. Two things do not fit inside it and run on Vertex AI instead, each for a reason stated where it happens: the deployed service, and the n=39 eval with repeats, which exceeds the 500-requests-per-day cap on its own.
+Local development and the demo use the AI Studio free tier. Google's pricing documentation says free-tier prompts may be used to improve its products, so `ALLOWED_REPOS` in [`tools/github.py`](issue_triage/tools/github.py) limits the agent to public repositories in code. The repeated n=39 evaluation exceeds the daily free-tier request cap, and the Cloud Run configuration should not share quota with a local process. Those two workloads use billed Vertex AI.
 
 Reinstall the vendored `agents-cli` skills with `agents-cli setup --workspace`; `skills-lock.json` pins the version.

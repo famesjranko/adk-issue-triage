@@ -11,7 +11,7 @@ import re
 from collections.abc import Iterator
 from typing import Optional
 
-from google.genai.errors import ClientError
+from google.genai.errors import ClientError, ServerError
 
 _LIMIT = re.compile(r"limit: (\d+)")
 _MODEL = re.compile(r"model: ([\w.\-]+)")
@@ -78,4 +78,15 @@ def daily_quota_message(exc: BaseException) -> Optional[str]:
         f"{model_name}. Not retryable; the daily cap resets at midnight Pacific. "
         "Wait, or run on Vertex AI."
     )
+  return None
+
+
+def transient_unavailable_message(exc: BaseException) -> str | None:
+  """Return a human message if ADK wrapped a Gemini 503/UNAVAILABLE."""
+  for error in _chain(exc):
+    if isinstance(error, ServerError) and error.code == 503:
+      return (
+          "Gemini returned 503 UNAVAILABLE — the model is temporarily "
+          "overloaded. Retry in a minute."
+      )
   return None

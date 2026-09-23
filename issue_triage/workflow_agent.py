@@ -2,7 +2,8 @@
 
 SequentialAgent, ParallelAgent and LoopAgent are all deprecated in 2.8 in favour
 of Workflow, which replaces "a list of sub-agents run in order" with an explicit
-graph of edges. Same six steps as agent.py, so the two are directly comparable.
+graph of edges. It has the same seven model-backed stages as agent.py, so the
+two forms are directly comparable.
 
 What the graph buys over the nested Sequential(Parallel(...)) form:
   - fan-out and join are one edge list, not two nested containers
