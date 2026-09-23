@@ -118,7 +118,7 @@ While suspended the model is not running, so no sentence in the conversation can
 | `readiness` | 56.1% (52.6–63.2) | 57.9% (57.9–57.9) | 19 |
 | overall | 65.5% (64.4–66.9) | 63.8% (62.7–65.3) | 118 |
 
-The grounding is worth 5.1 points of `area` accuracy, and the ranges do not touch: the same two issues flip in every ablated repeat. The three unchanged prompts sit inside their own spread, which is the control the first attempt only had by accident. `priority` at 38.5% is the real problem, and it is a prompt problem, not a variance one.
+The grounding is worth 5.1 points of `area` accuracy, and the ranges do not touch: every ablated repeat misses the same three issues and every grounded repeat the same one. The three unchanged prompts sit inside their own spread, which is the control the first attempt only had by accident. `priority` at 38.5% is the real problem, and it is a prompt problem, not a variance one.
 
 ## Quick start
 

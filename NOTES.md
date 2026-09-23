@@ -223,8 +223,9 @@ points across three repeats and `area` and `priority` do not move at all. The
 first attempt was not measuring the prompt; it was sampling.
 
 **The grounding effect is real and small.** Five points of `area`, and the
-ranges do not overlap: the same two issues flip in every ablated repeat, which
-is exactly the shape a deterministic prompt difference should have. The three
+ranges do not overlap: every ablated repeat misses the same three issues and
+every grounded repeat the same one, which is exactly the shape a deterministic
+prompt difference should have. The three
 unchanged prompts stay inside their own spread, so this time the control was
 designed rather than accidental.
 
