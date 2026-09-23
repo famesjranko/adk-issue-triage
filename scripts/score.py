@@ -35,6 +35,7 @@ from google.genai import types  # noqa: E402
 
 from issue_triage import prompts  # noqa: E402
 from issue_triage.plugins import CostMeterPlugin, RateLimitPlugin  # noqa: E402
+from issue_triage.quota import daily_quota_message  # noqa: E402
 
 FIELDS = ("kind", "area", "priority", "readiness")
 
@@ -255,4 +256,11 @@ if __name__ == "__main__":
   ap.add_argument("--topology", choices=["workflow", "sequential"], default="workflow")
   ap.add_argument("--dump", action="store_true",
                   help="write every run's per-case results and the summary to eval/results/")
-  asyncio.run(main(ap.parse_args()))
+  try:
+    asyncio.run(main(ap.parse_args()))
+  except Exception as exc:
+    message = daily_quota_message(exc)
+    if message is None:
+      raise
+    print(message, file=sys.stderr)
+    raise SystemExit(2) from None
