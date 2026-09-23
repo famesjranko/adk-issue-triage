@@ -202,6 +202,38 @@ The mistake worth not repeating: I designed the ablation, got a delta in the
 direction I expected, and nearly wrote it down as a result. The control channel
 was there by accident, not because I planned one.
 
+### The re-run: n=39, three repeats, temperature pinned
+
+Run on Vertex AI because the free tier's daily cap cannot fit it (§8). About
+1.2M prompt tokens and 80k output tokens across the six passes on flash-lite,
+which is cents. Per-case results for every repeat are in `eval/results/`.
+
+| field | grounded mean (min–max) | ablated mean (min–max) | n |
+|---|---|---|---|
+| `area` | 97.4% (97.4–97.4) | 92.3% (92.3–92.3) | 39 |
+| `kind` | 65.1% (61.9–66.7) | 63.5% (61.9–66.7) | 21 |
+| `priority` | 38.5% (38.5–38.5) | 38.5% (35.9–41.0) | 39 |
+| `readiness` | 56.1% (52.6–63.2) | 57.9% (57.9–57.9) | 19 |
+| overall | 65.5% (64.4–66.9) | 63.8% (62.7–65.3) | 118 |
+
+Three things fall out of it.
+
+**The 30-point swing was the temperature.** With it pinned, `kind` moves five
+points across three repeats and `area` and `priority` do not move at all. The
+first attempt was not measuring the prompt; it was sampling.
+
+**The grounding effect is real and small.** Five points of `area`, and the
+ranges do not overlap: the same two issues flip in every ablated repeat, which
+is exactly the shape a deterministic prompt difference should have. The three
+unchanged prompts stay inside their own spread, so this time the control was
+designed rather than accidental.
+
+**`priority` is the number to work on.** 38.5%, flat across every repeat and
+both configurations. Variance is not the explanation and neither is grounding;
+the prompt asks for a judgement the issue text does not support, and the human
+labels encode context the model never sees. That is the next experiment, and
+it wants a different input, not a better prompt.
+
 ## 7. Why I would not make these sub-agents A2A services
 
 Six agents that share one session's state, run inside one request, and have one

@@ -1,0 +1,2088 @@
+{
+  "topology": "workflow",
+  "grounding": "ablated",
+  "cases": 39,
+  "repeat": 3,
+  "runs": [
+    {
+      "graded": {
+        "kind": [
+          13,
+          21
+        ],
+        "area": [
+          36,
+          39
+        ],
+        "priority": [
+          14,
+          39
+        ],
+        "readiness": [
+          11,
+          19
+        ]
+      },
+      "rows": [
+        {
+          "id": "issue-2",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p0",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "#2"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-3",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-4",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "4: Reconcile already-shipped API breaks: v0.9.2 signature, CHANGELOG backfill, 0.x semver stance"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-5",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-6",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "6"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-7",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-10",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "#10"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-13",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-14",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "14"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-16",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "16"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-19",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/docs",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-21",
+          "predicted": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "21"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-22",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              22
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-23",
+          "predicted": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-28",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-35",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-37",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-38",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-48",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              48
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-49",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "49"
+            ]
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-50",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "50"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-51",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-55",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-56",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p0",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              56
+            ]
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-57",
+          "predicted": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-58",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-59",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "59"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-60",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-61",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-65",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-68",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-71",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "71"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-74",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/provider",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "NONE"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/provider",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-227",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-228",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-229",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-230",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/okhttp",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "230"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/okhttp",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-231",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/android",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/android",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-232",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              232
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        }
+      ]
+    },
+    {
+      "graded": {
+        "kind": [
+          14,
+          21
+        ],
+        "area": [
+          36,
+          39
+        ],
+        "priority": [
+          16,
+          39
+        ],
+        "readiness": [
+          11,
+          19
+        ]
+      },
+      "rows": [
+        {
+          "id": "issue-2",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p0",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "#2"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-3",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-4",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "4: Reconcile already-shipped API breaks: v0.9.2 signature, CHANGELOG backfill, 0.x semver stance"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-5",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-6",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "6"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-7",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-10",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "#10"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-13",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "13"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-14",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "#14"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-16",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "16"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-19",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/docs",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-21",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "NONE"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-22",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              22
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-23",
+          "predicted": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-28",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-35",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-37",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-38",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "38: Make the release-readiness check required on main's ruleset"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-48",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              48
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-49",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "49"
+            ]
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-50",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "50"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-51",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-55",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-56",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p0",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "56"
+            ]
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-57",
+          "predicted": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-58",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-59",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "59"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-60",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-61",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              61
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-65",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-68",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-71",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "#71"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-74",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/provider",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "NONE"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/provider",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-227",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-228",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-229",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-230",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/okhttp",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "230"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/okhttp",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-231",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/android",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/android",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-232",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              232
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        }
+      ]
+    },
+    {
+      "graded": {
+        "kind": [
+          13,
+          21
+        ],
+        "area": [
+          36,
+          39
+        ],
+        "priority": [
+          15,
+          39
+        ],
+        "readiness": [
+          11,
+          19
+        ]
+      },
+      "rows": [
+        {
+          "id": "issue-2",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p0",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "#2"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-3",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-4",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "4: Reconcile already-shipped API breaks: v0.9.2 signature, CHANGELOG backfill, 0.x semver stance"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-5",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-6",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "6"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-7",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-10",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "10: ci: bump GitHub Actions off deprecated Node 20 runtime"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-13",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-14",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "#14"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-16",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "16"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-19",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/docs",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-21",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "NONE"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-22",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              22
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-23",
+          "predicted": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-28",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-35",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-37",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-38",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-48",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              48
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-49",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "49"
+            ]
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-50",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              "50"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-51",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-55",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-56",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p0",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              56
+            ]
+          },
+          "expected": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-57",
+          "predicted": {
+            "kind": "documentation",
+            "area": "area/docs",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/docs",
+            "priority": "priority/p1",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-58",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-59",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "59"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-60",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-61",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": [
+              61
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-65",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-68",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-agent",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-71",
+          "predicted": {
+            "kind": "bug",
+            "area": "area/core",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "#71"
+            ]
+          },
+          "expected": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-74",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/provider",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "NONE"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/provider",
+            "priority": "priority/p3",
+            "readiness": null
+          }
+        },
+        {
+          "id": "issue-227",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-228",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p3",
+            "readiness": "ready-for-agent"
+          }
+        },
+        {
+          "id": "issue-229",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/ci",
+            "priority": "priority/p1",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/ci",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-230",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/okhttp",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              "230"
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/okhttp",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-231",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/android",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": []
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/android",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        },
+        {
+          "id": "issue-232",
+          "predicted": {
+            "kind": "enhancement",
+            "area": "area/core",
+            "priority": "priority/p3",
+            "readiness": "ready-for-human",
+            "duplicates": [
+              232
+            ]
+          },
+          "expected": {
+            "kind": null,
+            "area": "area/core",
+            "priority": "priority/p2",
+            "readiness": "ready-for-human"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "kind": {
+      "mean": 0.6349206349206349,
+      "min": 0.6190476190476191,
+      "max": 0.6666666666666666,
+      "n": 21
+    },
+    "area": {
+      "mean": 0.923076923076923,
+      "min": 0.9230769230769231,
+      "max": 0.9230769230769231,
+      "n": 39
+    },
+    "priority": {
+      "mean": 0.3846153846153846,
+      "min": 0.358974358974359,
+      "max": 0.41025641025641024,
+      "n": 39
+    },
+    "readiness": {
+      "mean": 0.5789473684210527,
+      "min": 0.5789473684210527,
+      "max": 0.5789473684210527,
+      "n": 19
+    },
+    "OVERALL": {
+      "mean": 0.6384180790960452,
+      "min": 0.6271186440677966,
+      "max": 0.652542372881356,
+      "n": 118
+    }
+  }
+}

@@ -1400,26 +1400,31 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
     </div>
 
     <div class="todo-item">
-      <div class="box"></div>
+      <div class="box done"></div>
       <div class="todo-body">
         <p class="t">Deploy to Cloud Run, read the span tree in Cloud Trace</p>
         <p class="d">
-          <code>./scripts/deploy.sh enable</code> &rarr; <code>secret</code>
-          &rarr; <code>deploy</code>. Twenty to thirty minutes, mostly waiting on
-          Cloud Build. Scales to zero, so cost is negligible &mdash; but teardown
-          is deliberately manual, and the command is in the file header.
+          Done, on the third deploy. The service ran complete triages behind
+          IAM auth and Cloud Trace holds the span tree for one, coordinator
+          through intake with real durations. The later spans never arrived,
+          which is recorded in the README rather than hidden. Each of the three
+          failures is now handled in <code>deploy.sh</code>; the notes have the
+          detail.
         </p>
       </div>
     </div>
 
     <div class="todo-item">
-      <div class="box"></div>
+      <div class="box done"></div>
       <div class="todo-body">
         <p class="t">Re-run the eval so it actually measures something</p>
         <p class="d">
-          Repeat runs per configuration, report the spread, and use more than 12
-          cases. The honest version of the finding is already worth telling; this
-          would turn it into &ldquo;and here is the redesign.&rdquo;
+          Done: all 39 cases, three repeats per configuration, temperature
+          pinned. The 30-point swing was the temperature; with it pinned the
+          grounding is worth 5.1 points of <code>area</code> and the ranges do
+          not overlap. <code>priority</code> sits at 38.5% in every repeat of
+          both configurations, which makes it the next experiment. Tables in the
+          README and notes, per-case results committed.
         </p>
       </div>
     </div>
