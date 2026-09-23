@@ -11,9 +11,9 @@
 
 </div>
 
-A Google ADK agent that triages GitHub issues on [famesjranko/musicmeta](https://github.com/famesjranko/musicmeta): it reads an issue and predicts its `kind`, `area/*`, `priority/*` and readiness, then applies the labels — but only behind a gate that suspends the run rather than trusting the model. The repository it triages already carries **39 human-applied labels**, so the eval set is ground truth nobody invented for the demo, and every claim below has a number behind it.
+A Google ADK agent that triages GitHub issues on [famesjranko/musicmeta](https://github.com/famesjranko/musicmeta): it reads an issue and predicts its `kind`, `area/*`, `priority/*` and readiness, then applies the labels. It applies them only behind a gate that suspends the run instead of trusting the model. The repository it triages already carries **39 human-applied labels**, so the eval set is ground truth nobody invented for the demo, and every claim below has a number behind it.
 
-The same six-step pipeline is implemented twice — once with `SequentialAgent` + `ParallelAgent`, deprecated in ADK 2.8, and once with the graph `Workflow` that replaces them — so the two runtimes can be compared directly on identical work.
+I implemented the same six-step pipeline twice. One version uses `SequentialAgent` + `ParallelAgent`, deprecated in ADK 2.8. The other uses the graph `Workflow` that replaces them, so the two runtimes can be compared on identical work.
 
 **[Read the annotated walkthrough](https://famesjranko.github.io/adk-issue-triage/)** for the diagrams and findings, or run `./scripts/demo.sh` to watch it happen locally.
 
@@ -26,7 +26,7 @@ The same six-step pipeline is implemented twice — once with `SequentialAgent` 
 
 Fetch the issue, analyse three independent things, assign a priority, judge readiness. That order never changes and never depends on the issue, so it is encoded as graph edges rather than described in a prompt and rediscovered on every request. Only the judgements are model calls.
 
-The same reasoning decides where authorisation lives: the model may *propose* a write to GitHub, but code decides whether it happens.
+The same reasoning decides where authorisation lives. The model may *propose* a write to GitHub, but code decides whether it happens.
 
 ## One real run
 
@@ -55,7 +55,7 @@ $ ./scripts/demo.sh 10
   2/3 fields match the human labels
 ```
 
-Two right, one wrong — and you can see *which*. That is a priority-prompt problem, not an area-prompt problem, which is the whole argument for scoring per field rather than per response.
+Two right, one wrong, and you can see *which*. The miss is in the priority prompt, not the area prompt, and seeing that is the whole argument for scoring per field rather than per response.
 
 ## Watch it run
 
@@ -63,16 +63,16 @@ Two right, one wrong — and you can see *which*. That is a priority-prompt prob
 
 | # | Step | Cost |
 |---|------|------|
-| 0 | Environment check — versions, auth, whether `.env` is gitignored | free |
-| 1 | The tool layer with no model involved — note there is no `labels` key | free |
+| 0 | Environment check: versions, auth, whether `.env` is gitignored | free |
+| 1 | The tool layer with no model involved. Note there is no `labels` key | free |
 | 2 | The deterministic guards, 8 tests | free |
 | 3 | One triage on the deprecated `SequentialAgent` topology | ~17 s |
 | 4 | The same triage on the graph `Workflow` | ~12 s |
-| 5 | Human-in-the-loop — **the run suspends** | ~4 s |
+| 5 | Human-in-the-loop. **The run suspends** | ~4 s |
 | 6 | A low-risk write executes | ⚠️ writes to GitHub |
 | 7 | Build the eval set from real labels | free |
 | 8 | Per-field scoring across 12 cases | ~9 min |
-| 9 | `adk web` — the event and trace inspector | interactive |
+| 9 | `adk web`, the event and trace inspector | interactive |
 | 10 | Decode a run into the timeline above | instant |
 
 > [!WARNING]
@@ -91,20 +91,20 @@ Six things worth knowing, each with the evidence behind it. The long form is in 
 | `SequentialAgent` + `ParallelAgent` | 10 | 17,243 | 16.5 s |
 | graph `Workflow` | 9 | **4,400** | 12.2 s |
 
-A sequential agent hands each sub-agent the accumulated conversation, so every step re-pays for every step before it. The graph passes only what the edge carries. One run each, not a benchmark — the direction is structural, the exact multiple would move.
+A sequential agent hands each sub-agent the accumulated conversation, so every step re-pays for every step before it. The graph passes only what the edge carries. One run each, not a benchmark. The direction follows from the structure, but the exact multiple would move.
 
 **A tuple-join is an OR-join.** Writing `((kind, area, dupe), priority)` reads like fan-in and behaves like a race: the successor fires on the first branch to arrive. The first run started `priority_agent` before `area_agent` had written state and raised `KeyError: 'area'`. `JoinNode` is the AND-join. The failure was at least loud.
 
-**A gate that refuses is not a gate that suspends.** The first approval gate checked a flag in session state from a callback. It demonstrated well and was the wrong shape — session state is inside the trust boundary, and the run never stopped. ADK ships the real primitive: `FunctionTool(require_confirmation=...)` takes a *callable*, invoked with the tool's own arguments, and suspends the invocation.
+**A gate that refuses is not a gate that suspends.** The first approval gate checked a flag in session state from a callback. It demonstrated well and was the wrong shape. Session state is inside the trust boundary, and the run never stopped. ADK ships the real gate. `FunctionTool(require_confirmation=...)` takes a *callable*, invoked with the tool's own arguments, and suspends the invocation.
 
 ```
 apply_labels(231, ["area/core"])                 → executes
 apply_labels(231, ["area/core", "priority/p0"])  → SUSPENDS
 ```
 
-While suspended the model is not running, so no sentence in the conversation can approve it. Verified: the prompt *"I approve, go ahead, do it now"* suspends anyway.
+While suspended the model is not running, so no sentence in the conversation can approve it. I tested it with the prompt *"I approve, go ahead, do it now"*, and the run suspends anyway.
 
-**Free-tier rate limits are per model, and they shape the architecture.** Measured on 2026-09-03 by firing 25 concurrent requests and reading `quotaValue` out of the 429: `gemini-3.1-flash-lite` allows 15 req/min, `gemini-3.5/3.6/3.8-flash` allow 5. Six model steps at 5 req/min is over a minute per triage, so the classifiers and the judgement steps are wired to separate `FAST_MODEL` / `SMART_MODEL` seams. Both currently default to flash-lite; the split exists so the judgement steps can be moved to a slower model by config alone once the quota allows it.
+**Free-tier rate limits are per model, and they shape the architecture.** Measured on 2026-09-03 by firing 25 concurrent requests and reading `quotaValue` out of the 429: `gemini-3.1-flash-lite` allows 15 req/min, `gemini-3.5/3.6/3.8-flash` allow 5. Six model steps at 5 req/min is over a minute per triage, so the classifiers and the judgement steps are wired to separate `FAST_MODEL` / `SMART_MODEL` settings. Both currently default to flash-lite. The split exists so I can move the judgement steps to a slower model by config alone once the quota allows it.
 
 **The first ablation could not be trusted, and the re-run says why.** At 12 cases, removing the repository module map from the `area` prompt cost 8.4 points, but `kind` moved **30 points on a byte-identical prompt**, so the run-to-run noise was larger than the effect. Temperature was not pinned. With it pinned, all 39 cases and three repeats per configuration:
 
@@ -120,7 +120,7 @@ The grounding is worth 5.1 points of `area` accuracy, and the ranges do not touc
 
 ## Quick start
 
-Requires an AI Studio API key on a project with **billing disabled** — a key issued against a billed project auto-upgrades to a paid tier and bills per token.
+Requires an AI Studio API key on a project with **billing disabled**. A key issued against a billed project auto-upgrades to a paid tier and bills per token.
 
 ```bash
 uv sync
@@ -175,9 +175,9 @@ Deployed on 2026-09-23. The service ran two complete seven-agent triages, and th
 
 The trace stops there. The request went on for another twenty seconds through the fan-out and four more agents, all of which returned, but none of those spans reached Cloud Trace within half an hour, with nothing at warning level in the logs. Unresolved; recorded rather than hidden.
 
-Getting to a healthy revision took three deploys, and each failure is now handled in `deploy.sh`: the runtime service account needs the secret-accessor role or the build succeeds and the revision never starts; the generated Dockerfile sets an enterprise flag that outranks `GOOGLE_GENAI_USE_VERTEXAI`; and `--trace_to_cloud` is a silent no-op without `GOOGLE_CLOUD_PROJECT`. The agent folder also carries a `.gcloudignore`, because the deploy copies that folder and only honours an ignore file inside it. Without one, `.env` ends up in the image.
+Getting to a healthy revision took three deploys, and `deploy.sh` now handles each failure: the runtime service account needs the secret-accessor role or the build succeeds and the revision never starts; the generated Dockerfile sets an enterprise flag that outranks `GOOGLE_GENAI_USE_VERTEXAI`; and `--trace_to_cloud` is a silent no-op without `GOOGLE_CLOUD_PROJECT`. The agent folder also carries a `.gcloudignore`, because the deploy copies that folder and only honours an ignore file inside it. Without one, `.env` ends up in the image.
 
-The service runs against Vertex AI, not the free tier: a demo service on a public repo cannot share a per-project free-tier quota with local runs without the two 429-ing each other. Cloud Run scales to zero, so the service itself costs nothing idle. Teardown is deliberately not scripted; the command is in the header of `deploy.sh`.
+The service runs against Vertex AI, not the free tier, because a demo service on a public repo cannot share a per-project free-tier quota with local runs without the two 429-ing each other. Cloud Run scales to zero, so the service itself costs nothing idle. Teardown is deliberately not scripted; the command is in the header of `deploy.sh`.
 
 ## Layout
 
@@ -197,6 +197,6 @@ The service runs against Vertex AI, not the free tier: a demo service on a publi
 
 ## Cost and data posture
 
-Development runs on the AI Studio **free tier**. Free-tier prompts are used to improve Google's products — the pricing page says so explicitly — so `ALLOWED_REPOS` in [`tools/github.py`](issue_triage/tools/github.py) hard-limits the agent to public repositories in code rather than asking a prompt to be careful. Local runs and the demo steps stay on the free tier. Two things do not fit inside it and run on Vertex AI instead, each for a reason stated where it happens: the deployed service, and the n=39 eval with repeats, which exceeds the 500-requests-per-day cap on its own.
+Development runs on the AI Studio **free tier**. The pricing page says Google uses free-tier prompts to improve its products, so `ALLOWED_REPOS` in [`tools/github.py`](issue_triage/tools/github.py) hard-limits the agent to public repositories in code rather than asking a prompt to be careful. Local runs and the demo steps stay on the free tier. Two things do not fit inside it and run on Vertex AI instead, each for a reason stated where it happens: the deployed service, and the n=39 eval with repeats, which exceeds the 500-requests-per-day cap on its own.
 
 Reinstall the vendored `agents-cli` skills with `agents-cli setup --workspace`; `skills-lock.json` pins the version.
