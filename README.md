@@ -75,6 +75,8 @@ Area and readiness match the human labels and priority doesn't: the model said p
 
 > [!WARNING]
 > Only one process may touch the API key at a time. The rate limiter keeps its window in memory while the free-tier quota is per project, so an eval run and a triage started alongside it will 429 each other.
+>
+> The free tier also caps each model at 500 requests per day. A full pass of the demo steps uses about 110, most of it in step 8. One `score.py --limit 39` pass uses about 280, so a repeated eval needs Vertex AI (see NOTES.md §8).
 
 ## Findings
 

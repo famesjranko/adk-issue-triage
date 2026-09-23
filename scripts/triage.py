@@ -27,6 +27,7 @@ console.silence_library_noise()
 from issue_triage.agent import root_agent  # noqa: E402
 from issue_triage.workflow_agent import build_workflow  # noqa: E402
 from issue_triage.plugins import CostMeterPlugin, RateLimitPlugin  # noqa: E402
+from issue_triage.quota import daily_quota_message  # noqa: E402
 
 APP = "issue_triage"
 USER = "local"
@@ -111,4 +112,12 @@ if __name__ == "__main__":
   ap.add_argument("--workflow", action="store_true",
                   help="use the graph Workflow instead of SequentialAgent")
   args = ap.parse_args()
-  asyncio.run(main(args.number, args.prompt, args.workflow))
+  console.compact_library_tracebacks()
+  try:
+    asyncio.run(main(args.number, args.prompt, args.workflow))
+  except Exception as exc:
+    message = daily_quota_message(exc)
+    if message is None:
+      raise
+    print(message, file=sys.stderr)
+    raise SystemExit(2) from None

@@ -42,6 +42,7 @@ step0() {
     warn "api key     MISSING — put it in issue_triage/.env"
   fi
   echo "gitignored  $(git check-ignore issue_triage/.env >/dev/null 2>&1 && echo yes || echo 'NO — fix this')"
+  dim "free tier   500 requests/day per model; a full eval pass is ~280, so score.py --limit 39 fits once a day and --repeat 3 does not"
 }
 
 step1() {
@@ -71,7 +72,7 @@ for line in read_module_map().splitlines():
 step2() {
   hdr 2 "The deterministic guards" \
       "validation and authorisation policy, tested without a model" \
-      "8 tests. Guards are code, so they get code tests — not prompt coaxing"
+      "every test passes. Guards are code, so they get code tests — not prompt coaxing"
   uv run pytest tests/ -v 2>&1 | grep -E "PASSED|FAILED|passed|failed"
 }
 
