@@ -17,7 +17,7 @@ The same six-step pipeline is implemented twice — once with `SequentialAgent` 
 
 **[Read the annotated walkthrough](https://famesjranko.github.io/adk-issue-triage/)** for the diagrams and findings, or run `./scripts/demo.sh` to watch it happen locally.
 
-> **Status.** Built over one day to find out what ADK 2.8 actually does, then tidied for reading. Everything under *What it does*, *Watch it run* and *Evaluate* runs and is covered by the guard tests in CI. The eval numbers below are being re-run at n=39 with repeats so the spread is reported, not one sample. The Cloud Run deploy script exists but has not yet been exercised end to end. Not built, deliberately: a FastAPI front-end, embedding-based duplicate search, and OTel export beyond what `--trace_to_cloud` gives for free. Each is a day, and a half-built one is worse than a named gap.
+> **Status.** Built over one day to find out what ADK 2.8 actually does, then tidied for reading. Everything under *What it does*, *Watch it run* and *Evaluate* runs and is covered by the guard tests in CI. The eval numbers below are being re-run at n=39 with repeats so the spread is reported, not one sample. The Cloud Run deploy has been exercised end to end: the service ran full triages behind IAM auth and Cloud Trace holds the span tree below, with one open question about dropped spans noted under *Deploy*. Not built, deliberately: a FastAPI front-end, embedding-based duplicate search, and OTel export beyond what `--trace_to_cloud` gives for free. Each is a day, and a half-built one is worse than a named gap.
 
 ## What it does
 
@@ -146,12 +146,30 @@ The ablation removes the repository module map from one prompt and nothing else.
 ```bash
 export PROJECT=<your-gcp-project>
 ./scripts/deploy.sh enable      # Cloud Run, Cloud Trace, Secret Manager
-./scripts/deploy.sh secret      # push the key without it reaching argv
-./scripts/deploy.sh deploy      # --trace_to_cloud, ADK version pinned to local
+./scripts/deploy.sh secret      # push the key without it reaching argv; grant the runtime account
+./scripts/deploy.sh deploy      # --trace_to_cloud, IAM-only, ADK version pinned to local
 ./scripts/deploy.sh url
 ```
 
-Cloud Run scales to zero, so a demo service is effectively free. Teardown is deliberately not scripted; the command is in the header of `deploy.sh`.
+Deployed on 2026-09-23. The service ran two complete seven-agent triages, and this is the span tree Cloud Trace recorded for one of them, offsets from the start of the request:
+
+```
+  0.0s  invocation  (7.1s)
+  0.0s    invoke_agent triage_coordinator  (3.4s)
+  0.2s      call_llm → generate_content gemini-3.1-flash-lite  (3.2s)
+  3.4s      execute_tool transfer_to_agent
+  3.4s    invoke_agent triage_pipeline
+  3.4s      invoke_agent intake_agent  (3.7s)
+  3.4s        call_llm → generate_content  (2.5s)
+  5.9s        execute_tool fetch_issue  (0.6s)
+  6.5s        call_llm → generate_content  (0.6s)
+```
+
+The trace stops there. The request went on for another twenty seconds through the fan-out and four more agents, all of which returned, but none of those spans reached Cloud Trace within half an hour, with nothing at warning level in the logs. Unresolved; recorded rather than hidden.
+
+Getting to a healthy revision took three deploys, and each failure is now handled in `deploy.sh`: the runtime service account needs the secret-accessor role or the build succeeds and the revision never starts; the generated Dockerfile sets an enterprise flag that outranks `GOOGLE_GENAI_USE_VERTEXAI`; and `--trace_to_cloud` is a silent no-op without `GOOGLE_CLOUD_PROJECT`. The agent folder also carries a `.gcloudignore`, because the deploy copies that folder and only honours an ignore file inside it. Without one, `.env` ends up in the image.
+
+The service runs against Vertex AI, not the free tier: a demo service on a public repo cannot share a per-project free-tier quota with local runs without the two 429-ing each other. Cloud Run scales to zero, so the service itself costs nothing idle. Teardown is deliberately not scripted; the command is in the header of `deploy.sh`.
 
 ## Layout
 
@@ -171,6 +189,6 @@ Cloud Run scales to zero, so a demo service is effectively free. Teardown is del
 
 ## Cost and data posture
 
-Everything runs on the AI Studio **free tier**. Free-tier prompts are used to improve Google's products — the pricing page says so explicitly — so `ALLOWED_REPOS` in [`tools/github.py`](issue_triage/tools/github.py) hard-limits the agent to public repositories in code rather than asking a prompt to be careful. Vertex AI is deliberately not used: it has no free tier.
+Development runs on the AI Studio **free tier**. Free-tier prompts are used to improve Google's products — the pricing page says so explicitly — so `ALLOWED_REPOS` in [`tools/github.py`](issue_triage/tools/github.py) hard-limits the agent to public repositories in code rather than asking a prompt to be careful. Local runs and the demo steps stay on the free tier. Two things do not fit inside it and run on Vertex AI instead, each for a reason stated where it happens: the deployed service, and the n=39 eval with repeats, which exceeds the 500-requests-per-day cap on its own.
 
 Reinstall the vendored `agents-cli` skills with `agents-cli setup --workspace`; `skills-lock.json` pins the version.

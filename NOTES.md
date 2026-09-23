@@ -214,6 +214,65 @@ Local composition until there is a deployment reason to cross the boundary.
 
 ---
 
+## 8. Deploying it found four things the local run could not
+
+`adk deploy cloud_run` builds a `python:3.11-slim` image from the agent folder,
+pushes it through Cloud Build, and runs `adk api_server --trace_to_cloud`. It
+took three deploys to get a revision that served a triage. Each failure was a
+gap between what the tooling implies and what it does.
+
+**The build succeeds and the revision never starts.** The revision runs as the
+default compute service account, which cannot read Secret Manager until told
+so. Error is clear once you find it; `deploy.sh secret` now grants the role.
+
+**The container has no `gh`.** The tool layer shelled out to the GitHub CLI,
+which meant the deployed agent could not fetch an issue. Rewritten against the
+REST API over stdlib `urllib`: same functions, same return shapes, reads of
+public repositories need no token, writes refuse without `GITHUB_TOKEN`. That
+also removed an undeclared runtime dependency the tests had been quietly
+relying on.
+
+**The ignore file is read from the agent folder, not the repo root.** The
+deploy copies `issue_triage/` and honours only a `.gitignore` or
+`.gcloudignore` inside it. There was none, so `issue_triage/.env` went into the
+first two images. Both images and their source zips were deleted and the key
+treated as burned; the folder now carries a `.gcloudignore`. Worth checking on any ADK
+project before the first deploy.
+
+**Two flags that look independent are not.** The generated Dockerfile sets
+`GOOGLE_GENAI_USE_ENTERPRISE=1`. In this `google-genai` release that is the
+new name for Vertex mode and wins on conflict, so setting
+`GOOGLE_GENAI_USE_VERTEXAI=FALSE` alongside it does nothing, and setting the
+enterprise flag to false forces API-key mode even with `VERTEXAI=TRUE`.
+Reproduced locally in three lines before touching the service again.
+
+**`--trace_to_cloud` is a no-op without `GOOGLE_CLOUD_PROJECT`.** ADK registers
+the exporter only when that variable is set, otherwise it logs a warning and
+carries on. The generated image happens to bake the variable in, but the
+deploy script now sets it explicitly so the behaviour does not depend on that.
+
+**And one open question.** Cloud Trace received the first fifteen spans of a
+triage, coordinator through intake, with real durations. The remaining twenty
+seconds of the request, the fan-out and four more agents, never arrived. No
+export error at any severity, CPU throttling ruled out by re-running with CPU
+always allocated. Recorded here rather than papered over; the span tree that
+did arrive is in the README.
+
+### The free tier has a daily cap, and it is the number that matters
+
+The rate-limit table in §5 is requests per minute. There is also a per-model
+**requests per day** limit, 500 for `gemini-3.1-flash-lite`, and it is the one
+an eval hits. One pass over 39 cases is about 280 model calls; three repeats of
+two configurations is around 1,640. The first re-run finished one clean repeat
+and died in the second. Every retry after that point fails, so the run was
+stopped rather than let it score exhausted calls as misses.
+
+The per-minute retry did its job before that: a real 429 from a concurrent
+request was absorbed by `RetryConfig(max_attempts=3)` on the node and the case
+completed. The daily cap is not retryable, and no client-side limiter can see
+it coming. The eval runs on Vertex AI for that reason, cost stated alongside
+the numbers.
+
 ## Environment gotcha (cost me ten minutes)
 
 This machine sets `NO_PROXY` containing `::1`. `httpx` cannot parse it and every
