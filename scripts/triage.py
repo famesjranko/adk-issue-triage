@@ -119,5 +119,5 @@ if __name__ == "__main__":
     message = daily_quota_message(exc)
     if message is None:
       raise
-    print(message, file=sys.stderr)
+    console.notice("QUOTA LIMIT", message)
     raise SystemExit(2) from None

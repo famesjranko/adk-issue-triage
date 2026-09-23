@@ -11,18 +11,41 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-W=$(tput cols 2>/dev/null || echo 100); [ "$W" -gt 100 ] && W=100
-b() { printf '\033[1;36m%s\033[0m\n' "$*"; }
-dim() { printf '\033[2m%s\033[0m\n' "$*"; }
-warn() { printf '\033[1;33m%s\033[0m\n' "$*"; }
-rule() { printf '\033[2m'; printf '\u2500%.0s' $(seq 1 "$W"); printf '\033[0m\n'; }
+if [ -t 1 ]; then W=$(tput cols 2>/dev/null || echo 100); else W=${COLUMNS:-100}; fi
+[ "$W" -gt 100 ] && W=100
+
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  RESET=$'\033[0m'; BOLD=$'\033[1m'; MUTED=$'\033[2m'
+  CYAN=$'\033[36m'; GREEN=$'\033[32m'; AMBER=$'\033[33m'; BLUE=$'\033[34m'
+else
+  RESET=""; BOLD=""; MUTED=""; CYAN=""; GREEN=""; AMBER=""; BLUE=""
+fi
+
+b() { printf '%s%s%s\n' "$BOLD$CYAN" "$*" "$RESET"; }
+dim() { printf '%s%s%s\n' "$MUTED" "$*" "$RESET"; }
+warn() { printf '%s%s%s%s\n' "$BOLD" "$AMBER" "$*" "$RESET"; }
+ok() { printf '  %s✓%s  %s\n' "$GREEN" "$RESET" "$*"; }
+skip() { printf '  %s○%s  %s%s%s\n' "$MUTED" "$RESET" "$MUTED" "$*" "$RESET"; }
+item() { printf '  %s│%s  %-17s %s\n' "$MUTED" "$RESET" "$1" "$2"; }
+rule() {
+  printf '%s' "$MUTED"
+  printf '─%.0s' $(seq 1 "$W")
+  printf '%s\n' "$RESET"
+}
+
+banner() {
+  printf '\n%s◆%s %sISSUE TRIAGE%s  %sGoogle ADK workflow case study%s\n' \
+    "$CYAN" "$RESET" "$BOLD" "$RESET" "$MUTED" "$RESET"
+  rule
+}
 
 hdr() {  # hdr <n> <title> <what it proves> <what to watch>
   printf '\n'
-  printf '\033[1;36m  STEP %s \033[0m\033[1m%s\033[0m\n' "$1" "  $2"
-  printf '\033[2m  proves \033[0m %s\n' "$3"
-  printf '\033[2m  watch  \033[0m %s\n' "$4"
+  printf '%s◆%s  %sSTEP %02d%s  %s%s%s\n' \
+    "$CYAN" "$RESET" "$MUTED" "$1" "$RESET" "$BOLD" "$2" "$RESET"
   rule
+  printf '  %sPROVES%s  %s\n' "$CYAN" "$RESET" "$3"
+  printf '  %sWATCH %s  %s%s%s\n\n' "$AMBER" "$RESET" "$MUTED" "$4" "$RESET"
 }
 
 # ADK prints experimental-feature notices on every import; the package silences
@@ -33,16 +56,18 @@ step0() {
   hdr 0 "Environment check" \
       "everything is wired before a single token is spent" \
       "no model calls happen here at all"
-  echo "python      $(uv run python -V 2>&1 | cut -d' ' -f2)"
-  echo "google-adk  $(uv run python -c 'import google.adk;print(google.adk.__version__)' 2>/dev/null)"
-  echo "gh auth     $(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' | head -1)"
+  item "Python" "$(uv run python -V 2>&1 | cut -d' ' -f2)"
+  item "Google ADK" "$(uv run python -c 'import google.adk;print(google.adk.__version__)' 2>/dev/null)"
+  item "GitHub CLI" "$(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' | head -1)"
   if grep -q '^GOOGLE_API_KEY=.\+' issue_triage/.env 2>/dev/null; then
-    echo "api key     present ($(grep '^GOOGLE_API_KEY=' issue_triage/.env | cut -d= -f2- | wc -c) chars)"
+    item "API key" "${GREEN}present${RESET} ($(grep '^GOOGLE_API_KEY=' issue_triage/.env | cut -d= -f2- | wc -c) chars)"
   else
-    warn "api key     MISSING — put it in issue_triage/.env"
+    item "API key" "${AMBER}missing — put it in issue_triage/.env${RESET}"
   fi
-  echo "gitignored  $(git check-ignore issue_triage/.env >/dev/null 2>&1 && echo yes || echo 'NO — fix this')"
-  dim "free tier   500 requests/day per model; a full eval pass is ~280, so score.py --limit 39 fits once a day and --repeat 3 does not"
+  item "Secret safety" "$(git check-ignore issue_triage/.env >/dev/null 2>&1 && printf '%signored by Git%s' "$GREEN" "$RESET" || printf '%sNOT IGNORED%s' "$AMBER" "$RESET")"
+  printf '\n'
+  item "Free tier" "500 requests / model / day"
+  item "Full eval" "~280 requests · one pass/day fits"
 }
 
 step1() {
@@ -53,19 +78,18 @@ step1() {
 from issue_triage.tools.github import fetch_issue, search_issues, list_labels
 from issue_triage.tools.repo import read_module_map
 i = fetch_issue(231)
-print('fetch_issue(231) keys :', sorted(i))
-print('title                 :', i['title'][:70])
-print('labels leaked?        :', 'labels' in i)
+print('  ISSUE 231')
+print('  ├─ title       ', i['title'][:70])
+print('  ├─ safe payload', '✓ labels withheld' if 'labels' not in i else '✗ labels leaked')
+print('  └─ fields      ', ', '.join(sorted(i)))
 print()
-print('list_labels()         :', len(list_labels()['labels']), 'real repo labels')
-print('search_issues()       :', [m['number'] for m in search_issues('Room schema')['matches']][:5])
+print('  TOOL CONTRACTS')
+print('  ├─ list_labels ', len(list_labels()['labels']), 'real repository labels')
+print('  └─ search      ', [m['number'] for m in search_issues('Room schema')['matches']][:5])
 print()
-print()
-print('module map grounding, read live from musicmeta/ARCHITECTURE.md —')
-print('this is what area_agent is told, so classification tracks the real repo:')
-print()
+print('  LIVE GROUNDING · musicmeta/ARCHITECTURE.md')
 for line in read_module_map().splitlines():
-    print('   ' + line)
+    print('  ' + line)
 "
 }
 
@@ -73,11 +97,16 @@ step2() {
   hdr 2 "The deterministic guards" \
       "validation and authorisation policy, tested without a model" \
       "every test passes. Guards are code, so they get code tests — not prompt coaxing"
-  uv run pytest tests/ -v 2>&1 | grep -E "PASSED|FAILED|passed|failed"
+  if uv run pytest tests/ -q --disable-warnings; then
+    ok "Deterministic policy and validation checks passed"
+  else
+    warn "Tests failed"
+    return 1
+  fi
 }
 
 step3() {
-  hdr 3 "One triage — DEPRECATED SequentialAgent + ParallelAgent topology" \
+  hdr 3 "Legacy topology — SequentialAgent + ParallelAgent" \
       "the pipeline works, and what it costs" \
       "the per-agent token table at the end. Note the PROMPT TOKEN total"
   uv run python scripts/triage.py 231
@@ -124,11 +153,17 @@ step7() {
       "39 gradeable cases out of 42 issues — 3 lack area/* or priority/*"
   uv run python scripts/build_evalset.py
   echo
-  dim "one case:"
+  b "  SAMPLE CASE"
   uv run python -c "
 import json,pathlib
 c=json.loads(pathlib.Path('eval/triage.evalset.json').read_text())['eval_cases'][0]
-print(json.dumps(c, indent=2)[:700])"
+turn=c['conversation'][0]
+expected=json.loads(turn['final_response']['parts'][0]['text'])
+tool=turn['intermediate_data']['tool_uses'][0]
+print(f\"  ├─ id          {c['eval_id']}\")
+print(f\"  ├─ prompt      {turn['user_content']['parts'][0]['text']}\")
+print(f\"  ├─ tool        {tool['name']}({tool['args']['number']})\")
+print('  └─ expected    ' + ' · '.join(f'{k}={v or \"—\"}' for k,v in expected.items()))"
 }
 
 step8() {
@@ -169,10 +204,11 @@ step10() {
 case "${1:-}" in
   0|1|2|3|4|5|6|7|8|9) "step$1" ;;
   10) step10 ;;
-  all) quota_exhausted=0
+  all) banner
+       quota_exhausted=0
        for n in 0 1 2 3 4 5 7 10; do
          if [ "$quota_exhausted" -eq 1 ] && [[ "$n" =~ ^(4|5|10)$ ]]; then
-           dim "Skipped step $n — the Gemini daily quota is exhausted."
+           skip "Step $n · Gemini daily quota exhausted"
            continue
          fi
          "step$n"
@@ -181,27 +217,30 @@ case "${1:-}" in
            quota_exhausted=1
          fi
        done
-       dim ""; dim "Skipped 6 (writes to GitHub), 8 (~9 min) and 9 (interactive)." ;;
+       printf '\n'
+       if [ "$quota_exhausted" -eq 1 ]; then
+         warn "  DEMO PAUSED  ·  model quota exhausted; offline sections completed"
+       else
+         ok "Non-writing walkthrough complete"
+       fi
+       skip "Steps 6, 8 and 9 · write, long-running and interactive" ;;
   *)
-    b "issue-triage demo walkthrough"
-    cat <<'EOT'
-
-  0  environment check          no model calls
-  1  tool layer                 no model calls
-  2  deterministic guards       no model calls
-  3  triage, Sequential/Parallel topology   (deprecated API)
-  4  triage, graph Workflow topology        (the replacement)
-  5  human-in-the-loop — the run SUSPENDS
-  6  low-risk write executes    ⚠️ writes to GitHub
-  7  build the eval set from real labels    no model calls
-  8  per-field scoring          ⚠️ ~9 minutes
-  9  adk web trace inspector    interactive
- 10  decode a run into a timeline           ⚠️ ~22 s if adk web is not up
-
-  ./scripts/demo.sh <n>     run one
-  ./scripts/demo.sh all     everything except 6, 8, 9
-
-  Suggested first pass:  0, 1, 2, 4, 5, 10
-EOT
+    banner
+    item "00  ENVIRONMENT" "wiring and secret safety ${MUTED}· offline${RESET}"
+    item "01  TOOL LAYER" "typed boundaries and live grounding ${MUTED}· offline${RESET}"
+    item "02  GUARDS" "deterministic policy tests ${MUTED}· offline${RESET}"
+    item "03  LEGACY RUN" "Sequential + Parallel topology"
+    item "04  GRAPH RUN" "ADK 2.x Workflow topology"
+    item "05  APPROVAL" "a risky write suspends"
+    item "06  LOW RISK" "an area-only write executes ${AMBER}· writes GitHub${RESET}"
+    item "07  EVAL SET" "ground truth from real labels ${MUTED}· offline${RESET}"
+    item "08  SCORE" "per-field evaluation ${AMBER}· ~9 minutes${RESET}"
+    item "09  ADK WEB" "interactive trace inspector"
+    item "10  TIMELINE" "decode one run visually"
+    printf '\n'
+    b "  ./scripts/demo.sh all"
+    dim "  Runs the complete non-writing walkthrough"
+    printf '\n'
+    item "Quick tour" "./scripts/demo.sh 4   ${MUTED}then 5, then 10${RESET}"
     ;;
 esac

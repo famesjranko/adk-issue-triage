@@ -30,10 +30,11 @@ amber = _c("33")
 red = _c("31")
 green = _c("32")
 blue = _c("34")
+magenta = _c("35")
 
 
 def width() -> int:
-  return min(shutil.get_terminal_size((100, 24)).columns, 104)
+  return min(shutil.get_terminal_size((100, 24)).columns, 100)
 
 
 def rule(char: str = "─") -> None:
@@ -42,12 +43,19 @@ def rule(char: str = "─") -> None:
 
 def heading(text: str) -> None:
   print()
-  print(bold(cyan(text)))
+  print(cyan("◆") + " " + bold(text))
   rule()
 
 
 def kv(label: str, value: str, pad: int = 14) -> None:
-  print(f"  {label:<{pad}} {value}")
+  print("  " + dim("│") + " " + cyan(f"{label:<{pad}}") + " " + value)
+
+
+def notice(label: str, message: str) -> None:
+  """A concise, high-visibility operational message on stderr."""
+  print(f"\n  {amber('◆')} {bold(label)}", file=sys.stderr)
+  print(textwrap.fill(message, width=width(), initial_indent="    ",
+                      subsequent_indent="    "), file=sys.stderr)
 
 
 def wrap(text: str, indent: int, limit: int | None = None) -> str:
@@ -96,9 +104,12 @@ GUTTER = 8 + AUTHOR_W  # timestamp column + author column
 def event_line(stamp: str, author: str, marker: str, body: str,
                state_key: str = "") -> None:
   """One event: [time][concurrency mark] author  body  → state."""
-  print(f"{stamp:>6}{marker} {author[:AUTHOR_W - 1]:<{AUTHOR_W}} {body}")
+  actor = f"{author[:AUTHOR_W - 1]:<{AUTHOR_W}}"
+  actor = dim(actor) if author == "you" else blue(actor)
+  lane = marker if marker.strip() else dim("│")
+  print(f" {dim(f'{stamp:>6}')} {lane} {actor} {body}")
   if state_key:
-    print(" " * (GUTTER + 1) + dim("⤷ ") + blue(f'state["{state_key}"]'))
+    print(" " * (GUTTER + 4) + dim("└─ ") + magenta(f'state["{state_key}"]'))
 
 
 def silence_library_noise() -> None:
