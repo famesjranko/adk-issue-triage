@@ -4,11 +4,11 @@ Each function here is a narrow, typed operation — the agent's only route to
 GitHub. The docstrings are the model's API contract: they are what Gemini sees
 when deciding which tool to call and with what arguments.
 
-Transport is the GitHub REST API over stdlib urllib, so the agent runs anywhere
-Python does (the Cloud Run image has no `gh` CLI). Reads of the public target
-repositories need no credentials. Writes (apply_labels) need $GITHUB_TOKEN with
-issues:write on the target repository; without it apply_labels returns an error
-dict instead of attempting the request.
+Live transport is the GitHub REST API over stdlib urllib, so the agent runs
+anywhere Python does (the Cloud Run image has no `gh` CLI). Reads need no
+credentials and fall back to the committed public-data snapshot when GitHub is
+unavailable. Writes never fall back: apply_labels needs $GITHUB_TOKEN with
+issues:write on the target repository or returns an error without requesting.
 
 Every public function returns a dict and never raises: failures come back as
 {"error": "..."} so the model can see and react to them.
@@ -17,15 +17,16 @@ Every public function returns a dict and never raises: failures come back as
 import json
 import os
 import urllib.error
-import urllib.parse
 import urllib.request
+
+from issue_triage.repository_data import REPOSITORY, RepositoryData
 
 # Free-tier Gemini may retain prompts for product improvement, so the agent is
 # hard-limited to repositories that are already public. This is enforced here in
 # deterministic code rather than asked for in a prompt.
 ALLOWED_REPOS = ("famesjranko/musicmeta", "famesjranko/MediaStack")
 
-REPO = "famesjranko/musicmeta"
+REPO = REPOSITORY
 
 API_ROOT = "https://api.github.com"
 API_VERSION = "2022-11-28"
@@ -72,22 +73,14 @@ def fetch_issue(number: int) -> dict:
         number: The issue number, e.g. 231.
 
     Returns:
-        A dict with keys: number, title, body, state, comments (list of str).
+        A dict with keys: number, title, body, state, comments (list of str),
+        and _meta (the live or snapshot source).
         On failure, a dict with an "error" key describing what went wrong.
     """
     try:
-        repo = _repo()
-        data = _request("GET", f"/repos/{repo}/issues/{int(number)}")
-        comments = _request(
-            "GET", f"/repos/{repo}/issues/{int(number)}/comments?per_page=10"
-        )
-        return {
-            "number": data["number"],
-            "title": data["title"],
-            "body": (data.get("body") or "")[:8000],
-            "state": data["state"].upper(),
-            "comments": [(c.get("body") or "")[:2000] for c in comments][:10],
-        }
+        _repo()
+        result = RepositoryData(_request).issue(number)
+        return result.value | {"_meta": result.metadata()}
     except Exception as exc:
         return {"error": _describe(exc)}
 
@@ -101,19 +94,13 @@ def search_issues(query: str) -> dict:
         query: Keywords to search for, e.g. "coroutines cache payload".
 
     Returns:
-        A dict with key "matches": a list of up to 10 dicts, each with number,
-        title and state. On failure, a dict with an "error" key.
+        A dict with "matches" (up to 10 dicts with number, title and state) and
+        _meta (the live or snapshot source). On failure, an "error" dict.
     """
     try:
-        q = urllib.parse.quote(f"{query} repo:{_repo()} is:issue")
-        data = _request("GET", f"/search/issues?q={q}&per_page=10")
-        return {
-            "matches": [
-                {"number": i["number"], "title": i["title"],
-                 "state": i["state"].upper()}
-                for i in data["items"][:10]
-            ]
-        }
+        _repo()
+        result = RepositoryData(_request).search(query)
+        return {"matches": result.value, "_meta": result.metadata()}
     except Exception as exc:
         return {"error": _describe(exc)}
 
@@ -125,16 +112,13 @@ def list_labels() -> dict:
     by the tool layer.
 
     Returns:
-        A dict with key "labels": a list of dicts with name and description.
+        A dict with "labels" (name and description dicts) and _meta (the live
+        or snapshot source).
     """
     try:
-        data = _request("GET", f"/repos/{_repo()}/labels?per_page=100")
-        return {
-            "labels": [
-                {"name": l["name"], "description": l.get("description") or ""}
-                for l in data
-            ]
-        }
+        _repo()
+        result = RepositoryData(_request).labels()
+        return {"labels": result.value, "_meta": result.metadata()}
     except Exception as exc:
         return {"error": _describe(exc)}
 

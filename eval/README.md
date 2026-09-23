@@ -1,5 +1,10 @@
 # Two ways to grade this agent, and why both are here
 
+The checked-in cases were derived from human-applied labels on MusicMeta, not
+invented for this demo. Normal runs prefer the live public repository and fall
+back to [`issue_triage/data/musicmeta.snapshot.json`](../issue_triage/data/musicmeta.snapshot.json); set
+`TRIAGE_DATA_SOURCE=snapshot` to reproduce the corpus without GitHub access.
+
 ## `adk eval` — the ADK-native path
 
 ```bash

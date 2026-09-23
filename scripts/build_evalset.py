@@ -10,14 +10,14 @@ Writes eval/triage.evalset.json.
 """
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from issue_triage.tools.github import REPO  # noqa: E402
+from issue_triage.repository_data import RepositoryData  # noqa: E402
+from issue_triage.tools.github import REPO, _request  # noqa: E402
 
 KINDS = {"bug", "enhancement", "documentation", "question", "invalid"}
 READINESS = {"ready-for-agent", "ready-for-human", "needs-info"}
@@ -42,16 +42,15 @@ def truth(labels: list[str]) -> dict | None:
 
 
 def main() -> None:
-  raw = subprocess.run(
-      ["gh", "issue", "list", "-R", REPO, "--state", "all", "--limit", "500",
-       "--json", "number,title,labels"],
-      capture_output=True, text=True, check=True,
-  ).stdout
-  issues = json.loads(raw)
+  result = RepositoryData(_request).labeled_issues()
+  issues = result.value
 
   cases, skipped = [], 0
   for issue in sorted(issues, key=lambda i: i["number"]):
-    expected = truth([l["name"] for l in issue["labels"]])
+    expected = truth([
+        label["name"] if isinstance(label, dict) else label
+        for label in issue["labels"]
+    ])
     if expected is None:
       skipped += 1
       continue
@@ -85,6 +84,8 @@ def main() -> None:
   }, indent=2))
 
   print(f"{len(cases)} cases -> {out}")
+  source = result.source + (f" · captured {result.captured_at}" if result.captured_at else "")
+  print(f"source: {source}")
   print(f"{skipped} issues skipped (no area/* or no priority/*)")
   graded = sum(1 for c in cases
                if json.loads(c["conversation"][0]["final_response"]["parts"][0]["text"])["readiness"])

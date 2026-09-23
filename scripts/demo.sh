@@ -58,7 +58,12 @@ step0() {
       "no model calls happen here at all"
   item "Python" "$(uv run python -V 2>&1 | cut -d' ' -f2)"
   item "Google ADK" "$(uv run python -c 'import google.adk;print(google.adk.__version__)' 2>/dev/null)"
-  item "GitHub CLI" "$(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' | head -1)"
+  if command -v gh >/dev/null 2>&1; then
+    gh_status=$(gh auth status 2>&1 | grep -o 'Logged in to [^ ]*' | head -1)
+    item "GitHub CLI" "${gh_status:-installed · auth optional for reads}"
+  else
+    item "GitHub CLI" "not installed · only maintainers need it"
+  fi
   if grep -q '^GOOGLE_API_KEY=.\+' issue_triage/.env 2>/dev/null; then
     item "API key" "${GREEN}present${RESET} ($(grep '^GOOGLE_API_KEY=' issue_triage/.env | cut -d= -f2- | wc -c) chars)"
   else
@@ -68,6 +73,11 @@ step0() {
   printf '\n'
   item "Free tier" "500 requests / model / day"
   item "Full eval" "~280 requests · one pass/day fits"
+  case "${TRIAGE_DATA_SOURCE:-auto}" in
+    snapshot) item "Data source" "snapshot · deterministic repository reads" ;;
+    live) item "Data source" "live GitHub · fallback disabled" ;;
+    *) item "Data source" "auto · live GitHub, snapshot fallback" ;;
+  esac
 }
 
 step1() {
@@ -78,16 +88,23 @@ step1() {
 from issue_triage.tools.github import fetch_issue, search_issues, list_labels
 from issue_triage.tools.repo import read_module_map
 i = fetch_issue(231)
+labels = list_labels()
+matches = search_issues('Room schema')
+source = i.get('_meta', {})
+source_text = source.get('source', 'unknown')
+if source.get('captured_at'):
+    source_text += ' · captured ' + source['captured_at']
 print('  ISSUE 231')
 print('  ├─ title       ', i['title'][:70])
 print('  ├─ safe payload', '✓ labels withheld' if 'labels' not in i else '✗ labels leaked')
-print('  └─ fields      ', ', '.join(sorted(i)))
+print('  └─ fields      ', ', '.join(sorted(k for k in i if not k.startswith('_'))))
 print()
 print('  TOOL CONTRACTS')
-print('  ├─ list_labels ', len(list_labels()['labels']), 'real repository labels')
-print('  └─ search      ', [m['number'] for m in search_issues('Room schema')['matches']][:5])
+print('  ├─ source      ', source_text)
+print('  ├─ list_labels ', len(labels['labels']), 'real repository labels')
+print('  └─ search      ', [m['number'] for m in matches['matches']][:5])
 print()
-print('  LIVE GROUNDING · musicmeta/ARCHITECTURE.md')
+print('  REPOSITORY GROUNDING · musicmeta/ARCHITECTURE.md')
 for line in read_module_map().splitlines():
     print('  ' + line)
 "

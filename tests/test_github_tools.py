@@ -64,7 +64,9 @@ def test_fetch_issue_shape_and_no_label_leak(fake):
   f = fake({"/repos/famesjranko/musicmeta/issues/231/comments": COMMENTS,
             "/repos/famesjranko/musicmeta/issues/231": ISSUE})
   out = github.fetch_issue(231)
-  assert set(out) == {"number", "title", "body", "state", "comments"}
+  assert set(out) == {"number", "title", "body", "state", "comments", "_meta"}
+  assert out["_meta"] == {
+      "source": "github-live", "repository": "famesjranko/musicmeta"}
   assert out["number"] == 231 and out["title"] == "Room schema drift"
   assert len(out["body"]) == 8000
   assert out["state"] == "OPEN"
@@ -78,10 +80,11 @@ def test_fetch_issue_shape_and_no_label_leak(fake):
 def test_search_issues_shape_and_scoped_query(fake):
   f = fake({"/search/issues": SEARCH})
   out = github.search_issues("room schema")
-  assert out == {"matches": [
+  assert out["matches"] == [
       {"number": 231, "title": "Room schema drift", "state": "OPEN"},
       {"number": 12, "title": "Room migration", "state": "CLOSED"},
-  ]}
+  ]
+  assert out["_meta"]["source"] == "github-live"
   (method, path, _, _), = f.calls
   assert method == "GET"
   assert "q=room%20schema%20repo%3Afamesjranko/musicmeta%20is%3Aissue" in path
@@ -89,10 +92,12 @@ def test_search_issues_shape_and_scoped_query(fake):
 
 def test_list_labels_shape(fake):
   fake({"/repos/famesjranko/musicmeta/labels": LABELS})
-  assert github.list_labels() == {"labels": [
+  out = github.list_labels()
+  assert out["labels"] == [
       {"name": "bug", "description": "Something is broken"},
       {"name": "area/core", "description": ""},
-  ]}
+  ]
+  assert out["_meta"]["source"] == "github-live"
 
 
 def test_apply_labels_posts_labels(fake, monkeypatch):
@@ -126,7 +131,8 @@ def test_apply_labels_without_token_never_requests(fake, monkeypatch):
     lambda: github.search_issues("room"),
     lambda: github.list_labels(),
 ])
-def test_http_error_becomes_error_dict(fake, call):
+def test_http_error_becomes_error_dict(fake, call, monkeypatch):
+  monkeypatch.setenv("TRIAGE_DATA_SOURCE", "live")
   fake({"/": http_error(404, "Not Found")})
   out = call()
   assert set(out) == {"error"}
@@ -187,6 +193,7 @@ def test_module_map_rest_fallback(fake, monkeypatch):
 
 def test_module_map_rest_failure_never_raises(fake, monkeypatch):
   monkeypatch.delenv("MUSICMETA_PATH", raising=False)
+  monkeypatch.setenv("TRIAGE_DATA_SOURCE", "live")
   fake({"/": http_error(403, "API rate limit exceeded")})
   repo.read_module_map.cache_clear()
   try:
@@ -195,6 +202,29 @@ def test_module_map_rest_failure_never_raises(fake, monkeypatch):
     repo.read_module_map.cache_clear()
   assert out.startswith("(could not read famesjranko/musicmeta ARCHITECTURE.md:")
   assert "rate limit" in out
+
+
+def test_read_falls_back_to_committed_snapshot(fake, monkeypatch):
+  monkeypatch.setenv("TRIAGE_DATA_SOURCE", "auto")
+  fake({"/": urllib.error.URLError("offline")})
+
+  out = github.fetch_issue(231)
+
+  assert out["number"] == 231
+  assert "labels" not in out
+  assert out["_meta"]["source"] == "snapshot"
+  assert out["_meta"]["captured_at"]
+
+
+def test_snapshot_mode_never_calls_github(fake, monkeypatch):
+  monkeypatch.setenv("TRIAGE_DATA_SOURCE", "snapshot")
+  f = fake({})
+
+  out = github.search_issues("Room schema")
+
+  assert out["matches"]
+  assert out["_meta"]["source"] == "snapshot"
+  assert f.calls == []
 
 
 def test_module_map_prefers_local_checkout(fake, monkeypatch, tmp_path):

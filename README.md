@@ -63,7 +63,7 @@ Area and readiness match the human labels and priority doesn't: the model said p
 |---|------|------|
 | 0 | Environment check: versions, auth, whether `.env` is gitignored | free |
 | 1 | The tool layer with no model involved. Note there is no `labels` key | free |
-| 2 | The deterministic guards, 8 tests | free |
+| 2 | The deterministic offline test suite | free |
 | 3 | One triage on the deprecated `SequentialAgent` topology | ~17 s |
 | 4 | The same triage on the graph `Workflow` | ~12 s |
 | 5 | Human-in-the-loop. **The run suspends** | ~4 s |
@@ -141,6 +141,23 @@ cp issue_triage/.env.example issue_triage/.env    # then paste your key
 ./scripts/demo.sh 4                               # first real run
 ```
 
+Repository reads use live public MusicMeta data when GitHub is reachable and
+fall back automatically to a committed snapshot of the same real issues. No
+GitHub credentials are required for either path. To make a portfolio run fully
+deterministic and independent of GitHub availability, select the snapshot explicitly
+(Gemini model calls still require network access):
+
+```bash
+TRIAGE_DATA_SOURCE=snapshot ./scripts/demo.sh all
+```
+
+Every read-tool response identifies its source as `github-live` or `snapshot`;
+the snapshot also reports when it was captured. It contains issue text,
+comments, labels and the architecture module map, but `fetch_issue` strips
+labels on both paths so the model never sees its answer key. Writes never fall
+back or pretend to succeed: `apply_labels` always requires GitHub and a token
+with Issues write permission.
+
 Everyday commands:
 
 ```bash
@@ -148,6 +165,15 @@ uv run python scripts/triage.py 231 --workflow    # one triage, Runner wired by 
 uv run python scripts/narrate.py --run 231        # ...decoded into a timeline
 uv run pytest tests/ -q                           # the guards, offline
 uv run adk web                                    # the event and trace inspector
+```
+
+Maintainers refresh the snapshot deliberately and review its public-data diff.
+If labels changed, the eval set and published metrics must be regenerated
+together rather than silently changing the answer key:
+
+```bash
+uv run python scripts/refresh_snapshot.py
+TRIAGE_DATA_SOURCE=snapshot uv run python scripts/build_evalset.py
 ```
 
 ## Evaluate
@@ -201,7 +227,10 @@ The service runs against Vertex AI, because a demo service on a public repo cann
 | [`issue_triage/plugins.py`](issue_triage/plugins.py) | per-model rate limiter, token cost meter |
 | [`issue_triage/prompts.py`](issue_triage/prompts.py) | instructions, including the ablated variant |
 | [`issue_triage/tools/`](issue_triage/tools/) | the four GitHub operations, plus the module-map grounding |
+| [`issue_triage/repository_data.py`](issue_triage/repository_data.py) | live/snapshot read gateway and source policy |
+| [`issue_triage/data/`](issue_triage/data/) | committed fallback captured from public MusicMeta data |
 | [`scripts/demo.sh`](scripts/demo.sh) | the eleven-step walkthrough |
+| [`scripts/refresh_snapshot.py`](scripts/refresh_snapshot.py) | maintainer-only snapshot refresh command |
 | [`scripts/narrate.py`](scripts/narrate.py) | decode a run into a timeline and score it |
 | [`scripts/score.py`](scripts/score.py) | per-field accuracy against the human labels |
 | [`NOTES.md`](NOTES.md) | what the build taught, at length |

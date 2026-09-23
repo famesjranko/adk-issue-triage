@@ -14,7 +14,6 @@ import argparse
 import asyncio
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -27,6 +26,8 @@ load_dotenv(ROOT / "issue_triage" / ".env", override=True)
 
 from issue_triage import console  # noqa: E402
 from issue_triage.quota import daily_quota_message  # noqa: E402
+from issue_triage.repository_data import RepositoryData  # noqa: E402
+from issue_triage.tools.github import _request  # noqa: E402
 
 # This machine's NO_PROXY contains "::1", which httpx cannot parse. The .env
 # override lands too late for a client built at import time, so repeat it here.
@@ -88,13 +89,14 @@ async def run_fresh(number: int, workflow: bool) -> dict:
 
 def truth_for(number: int) -> dict | None:
   try:
-    raw = subprocess.run(
-        ["gh", "issue", "view", str(number), "-R", "famesjranko/musicmeta",
-         "--json", "labels"],
-        capture_output=True, text=True, timeout=30, check=True).stdout
+    issues = RepositoryData(_request).labeled_issues().value
+    issue = next(item for item in issues if item["number"] == number)
   except Exception:
     return None
-  names = [l["name"] for l in json.loads(raw)["labels"]]
+  names = [
+      label["name"] if isinstance(label, dict) else label
+      for label in issue["labels"]
+  ]
   return {
       "kind": next((l for l in names if l in KINDS), None),
       "area": next((l for l in names if l.startswith("area/")), None),
