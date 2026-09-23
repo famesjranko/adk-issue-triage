@@ -169,7 +169,18 @@ step10() {
 case "${1:-}" in
   0|1|2|3|4|5|6|7|8|9) "step$1" ;;
   10) step10 ;;
-  all) for n in 0 1 2 3 4 5 7 10; do "step$n"; done
+  all) quota_exhausted=0
+       for n in 0 1 2 3 4 5 7 10; do
+         if [ "$quota_exhausted" -eq 1 ] && [[ "$n" =~ ^(4|5|10)$ ]]; then
+           dim "Skipped step $n — the Gemini daily quota is exhausted."
+           continue
+         fi
+         "step$n"
+         status=$?
+         if [ "$status" -eq 2 ] && [[ "$n" =~ ^(3|4|5|10)$ ]]; then
+           quota_exhausted=1
+         fi
+       done
        dim ""; dim "Skipped 6 (writes to GitHub), 8 (~9 min) and 9 (interactive)." ;;
   *)
     b "issue-triage demo walkthrough"

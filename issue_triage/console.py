@@ -150,21 +150,18 @@ def _one_line(exc: BaseException) -> str:
 
 
 def compact_library_tracebacks() -> None:
-  """Print ADK's logged exceptions as one line each rather than a traceback.
+  """Keep ADK's internal exception logging out of local script output.
 
   A failed model call is logged by the node runner, then again by the runner
   for the root node, each with a chained traceback, once per retry and once per
   branch of a fan-out. One exhausted quota came to eight 40-line tracebacks
-  above the one line the script prints to explain it. What is kept: every
-  record, its message, and the root cause's class and first line, so a 429
-  still reads as `ClientError: 429 RESOURCE_EXHAUSTED ...`. What is hidden: the
-  stack frames, which are all ADK's and say nothing about this project. A
-  failure the scripts do not recognise still raises and prints in full.
+  above the one line the script prints to explain it. The normal ADK logger
+  hierarchy is silenced here because the script either turns a known quota
+  failure into an actionable message or re-raises an unknown failure, which
+  still prints one complete top-level traceback.
 
-  This is a record factory, not a filter on the `google_adk` logger. A logger's
-  filters only see records logged on that logger, never ones that propagate up
-  from children like `google_adk.google.adk.workflow._node_runner`. A filter on
-  each child would miss any logger created after this runs.
+  The record factory remains a fallback for a child logger with its own level:
+  it collapses that record to its root cause instead of emitting every frame.
 
   Called from the scripts and not from issue_triage/__init__.py, because the
   deployed service imports the package too. On Cloud Run the traceback is the
@@ -172,6 +169,7 @@ def compact_library_tracebacks() -> None:
   """
   import logging
 
+  logging.getLogger(_ADK_LOGGER).setLevel(logging.CRITICAL + 1)
   base = logging.getLogRecordFactory()
   if getattr(base, "compacts_adk_tracebacks", False):
     return

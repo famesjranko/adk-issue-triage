@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 load_dotenv(ROOT / "issue_triage" / ".env", override=True)
 
 from issue_triage import console  # noqa: E402
+from issue_triage.quota import daily_quota_message  # noqa: E402
 
 # This machine's NO_PROXY contains "::1", which httpx cannot parse. The .env
 # override lands too late for a client built at import time, so repeat it here.
@@ -196,7 +197,16 @@ if __name__ == "__main__":
   args = ap.parse_args()
 
   if args.run:
-    render(asyncio.run(run_fresh(args.run, workflow=not args.sequential)), args.run)
+    console.compact_library_tracebacks()
+    try:
+      data = asyncio.run(run_fresh(args.run, workflow=not args.sequential))
+    except Exception as exc:
+      message = daily_quota_message(exc)
+      if message is None:
+        raise
+      print(message, file=sys.stderr)
+      raise SystemExit(2) from None
+    render(data, args.run)
   else:
     data = from_server(None if args.latest else args.session)
     text = json.dumps(data)

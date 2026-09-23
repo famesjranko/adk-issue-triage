@@ -46,6 +46,20 @@ def _raise_chained():
     raise _Outer("wrapped twice") from mid
 
 
+def test_adk_internal_errors_are_silent_by_default(caplog):
+  logger = logging.getLogger("google_adk")
+  original_level = logger.level
+  original_factory = logging.getLogRecordFactory()
+  caplog.set_level(logging.DEBUG)
+  try:
+    console.compact_library_tracebacks()
+    logging.getLogger(NODE_RUNNER).error("duplicate internal failure")
+    assert not caplog.records
+  finally:
+    logger.setLevel(original_level)
+    logging.setLogRecordFactory(original_factory)
+
+
 def test_exception_record_is_one_line_naming_the_root_cause(compacted):
   try:
     _raise_chained()
