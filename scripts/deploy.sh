@@ -48,6 +48,8 @@ case "${1:-deploy}" in
     # which would deploy an agent that behaves differently from local. Pin it.
     adk_version="$(uv run python -c 'import google.adk; print(google.adk.__version__)')"
     # --no-allow-unauthenticated: a public URL would let anyone spend the API key's quota.
+    # GOOGLE_CLOUD_PROJECT: --trace_to_cloud only registers the exporter when this
+    # is set. Without it the service starts, logs one warning, and traces nothing.
     uv run adk deploy cloud_run issue_triage \
       --project "$PROJECT" \
       --region "$REGION" \
@@ -59,7 +61,7 @@ case "${1:-deploy}" in
       --min-instances=0 \
       --no-allow-unauthenticated \
       --set-secrets="GOOGLE_API_KEY=${SECRET}:latest" \
-      --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=FALSE,GOOGLE_GENAI_USE_ENTERPRISE=FALSE"
+      --set-env-vars="GOOGLE_GENAI_USE_VERTEXAI=FALSE,GOOGLE_GENAI_USE_ENTERPRISE=FALSE,GOOGLE_CLOUD_PROJECT=${PROJECT},GOOGLE_CLOUD_LOCATION=global"
     ;;
 
   url)
