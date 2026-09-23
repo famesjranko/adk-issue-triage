@@ -121,3 +121,75 @@ def silence_library_noise() -> None:
   warnings.filterwarnings("ignore", category=DeprecationWarning)
   for name in ("google_adk", "google.adk", "google_genai", "google.genai"):
     logging.getLogger(name).setLevel(logging.ERROR)
+
+
+_ADK_LOGGER = "google_adk"
+_EXC_LINE_LIMIT = 160
+
+
+def _innermost(exc: BaseException) -> BaseException:
+  """The root cause: follow `from` links, then ADK's `.error` wrapper."""
+  seen = {id(exc)}
+  while True:
+    wrapped = getattr(exc, "error", None)
+    nxt = exc.__cause__ or (wrapped if isinstance(wrapped, BaseException) else None)
+    if nxt is None and not exc.__suppress_context__:
+      nxt = exc.__context__
+    if nxt is None or id(nxt) in seen:
+      return exc
+    seen.add(id(nxt))
+    exc = nxt
+
+
+def _one_line(exc: BaseException) -> str:
+  lines = [ln.strip() for ln in str(exc).splitlines() if ln.strip()]
+  text = f"{type(exc).__name__}: {lines[0]}" if lines else type(exc).__name__
+  if len(text) > _EXC_LINE_LIMIT:
+    text = text[:_EXC_LINE_LIMIT].rstrip() + "…"
+  return text
+
+
+def compact_library_tracebacks() -> None:
+  """Print ADK's logged exceptions as one line each rather than a traceback.
+
+  A failed model call is logged by the node runner, then again by the runner
+  for the root node, each with a chained traceback, once per retry and once per
+  branch of a fan-out. One exhausted quota came to eight 40-line tracebacks
+  above the one line the script prints to explain it. What is kept: every
+  record, its message, and the root cause's class and first line, so a 429
+  still reads as `ClientError: 429 RESOURCE_EXHAUSTED ...`. What is hidden: the
+  stack frames, which are all ADK's and say nothing about this project. A
+  failure the scripts do not recognise still raises and prints in full.
+
+  This is a record factory, not a filter on the `google_adk` logger. A logger's
+  filters only see records logged on that logger, never ones that propagate up
+  from children like `google_adk.google.adk.workflow._node_runner`. A filter on
+  each child would miss any logger created after this runs.
+
+  Called from the scripts and not from issue_triage/__init__.py, because the
+  deployed service imports the package too. On Cloud Run the traceback is the
+  only record of a failure, so its logs keep them in full.
+  """
+  import logging
+
+  base = logging.getLogRecordFactory()
+  if getattr(base, "compacts_adk_tracebacks", False):
+    return
+
+  def factory(*args, **kwargs) -> logging.LogRecord:
+    record = base(*args, **kwargs)
+    name = record.name
+    if record.exc_info and record.exc_info[1] is not None and (
+        name == _ADK_LOGGER or name.startswith(_ADK_LOGGER + ".")):
+      cause = _one_line(_innermost(record.exc_info[1]))
+      message = record.getMessage().rstrip()
+      if message.endswith("."):
+        message = message[:-1]
+      record.msg = f"{message}: {cause}"
+      record.args = None
+      record.exc_info = None
+      record.exc_text = None
+    return record
+
+  factory.compacts_adk_tracebacks = True
+  logging.setLogRecordFactory(factory)

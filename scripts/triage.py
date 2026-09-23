@@ -112,6 +112,7 @@ if __name__ == "__main__":
   ap.add_argument("--workflow", action="store_true",
                   help="use the graph Workflow instead of SequentialAgent")
   args = ap.parse_args()
+  console.compact_library_tracebacks()
   try:
     asyncio.run(main(args.number, args.prompt, args.workflow))
   except Exception as exc:

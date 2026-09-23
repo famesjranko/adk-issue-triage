@@ -33,7 +33,7 @@ load_dotenv(ROOT / "issue_triage" / ".env", override=True)
 from google.adk.runners import InMemoryRunner  # noqa: E402
 from google.genai import types  # noqa: E402
 
-from issue_triage import prompts  # noqa: E402
+from issue_triage import console, prompts  # noqa: E402
 from issue_triage.plugins import CostMeterPlugin, RateLimitPlugin  # noqa: E402
 from issue_triage.quota import daily_quota_message  # noqa: E402
 
@@ -256,6 +256,7 @@ if __name__ == "__main__":
   ap.add_argument("--topology", choices=["workflow", "sequential"], default="workflow")
   ap.add_argument("--dump", action="store_true",
                   help="write every run's per-case results and the summary to eval/results/")
+  console.compact_library_tracebacks()
   try:
     asyncio.run(main(ap.parse_args()))
   except Exception as exc:
