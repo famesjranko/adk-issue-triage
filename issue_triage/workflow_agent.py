@@ -34,30 +34,37 @@ SMART = prompts.SMART_MODEL
 DETERMINISTIC = types.GenerateContentConfig(temperature=0.0)
 
 # Free-tier 503s are common, so the nodes that call the model get a retry rather
-# than failing the whole graph.
+# than failing the whole graph. An LlmAgent is itself a workflow node, so the
+# retry is a field on the agent; Workflow keeps it when it clones the agent into
+# the graph. No per-node timeout: RateLimitPlugin sleeps inside the node while it
+# waits for quota, so a timeout would fire on throttling and the retry would
+# then spend more of the same quota.
 RETRY = RetryConfig(max_attempts=3)
+
+# Every node that calls the model decodes deterministically and retries.
+MODEL_NODE = {"generate_content_config": DETERMINISTIC, "retry_config": RETRY}
 
 
 def build_workflow(area_instruction: str = prompts.AREA_INSTRUCTION) -> Workflow:
   intake = LlmAgent(name="intake_agent", model=SMART,
                     instruction=prompts.INTAKE_INSTRUCTION,
-                    tools=[fetch_issue], generate_content_config=DETERMINISTIC, output_key="issue")
+                    tools=[fetch_issue], output_key="issue", **MODEL_NODE)
   kind = LlmAgent(name="kind_agent", model=FAST,
-                  instruction=prompts.KIND_INSTRUCTION, generate_content_config=DETERMINISTIC, output_key="kind")
+                  instruction=prompts.KIND_INSTRUCTION, output_key="kind", **MODEL_NODE)
   area = LlmAgent(name="area_agent", model=FAST,
-                  instruction=area_instruction, generate_content_config=DETERMINISTIC, output_key="area")
+                  instruction=area_instruction, output_key="area", **MODEL_NODE)
   dupe = LlmAgent(name="dupe_agent", model=FAST,
                   instruction=prompts.DUPE_INSTRUCTION,
-                  tools=[search_issues], generate_content_config=DETERMINISTIC, output_key="duplicates")
+                  tools=[search_issues], output_key="duplicates", **MODEL_NODE)
   priority = LlmAgent(name="priority_agent", model=FAST,
                       instruction=prompts.PRIORITY_INSTRUCTION,
-                      generate_content_config=DETERMINISTIC, output_key="priority")
+                      output_key="priority", **MODEL_NODE)
   readiness = LlmAgent(name="readiness_agent", model=SMART,
                        instruction=prompts.READINESS_INSTRUCTION,
-                       generate_content_config=DETERMINISTIC, output_key="readiness")
+                       output_key="readiness", **MODEL_NODE)
   synthesis = LlmAgent(name="synthesis_agent", model=FAST,
                        instruction=prompts.SYNTHESIS_INSTRUCTION,
-                       generate_content_config=DETERMINISTIC, output_key="triage_result")
+                       output_key="triage_result", **MODEL_NODE)
 
   # A tuple on the LEFT of an edge is an OR-join: the successor fires on the
   # first branch to arrive. That is not what fan-out/gather means here — the
