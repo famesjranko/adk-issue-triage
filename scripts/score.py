@@ -18,6 +18,7 @@ the mean and the min–max per field, which is what a prompt change has to beat.
 import argparse
 import asyncio
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -36,6 +37,20 @@ from issue_triage import prompts  # noqa: E402
 from issue_triage.plugins import CostMeterPlugin, RateLimitPlugin  # noqa: E402
 
 FIELDS = ("kind", "area", "priority", "readiness")
+
+
+def rpm_override() -> dict[str, int] | None:
+  """Per-model request limit from TRIAGE_RPM, or None for the free-tier defaults.
+
+  The defaults in RateLimitPlugin are the AI Studio free-tier numbers. On
+  Vertex AI the ceiling is far higher, and running a full eval at 15 RPM
+  would take hours for no reason. Applies to both model seams.
+  """
+  raw = os.environ.get("TRIAGE_RPM")
+  if not raw:
+    return None
+  rpm = int(raw)
+  return {prompts.FAST_MODEL: rpm, prompts.SMART_MODEL: rpm}
 
 
 def load_cases(limit: int | None) -> list[dict]:
@@ -190,7 +205,7 @@ async def main(args) -> None:
   runner = InMemoryRunner(
       agent=build_agent(args.topology, area_instruction),
       app_name="issue_triage",
-      plugins=[RateLimitPlugin(), meter],
+      plugins=[RateLimitPlugin(limits=rpm_override()), meter],
   )
 
   cases = load_cases(args.limit)
