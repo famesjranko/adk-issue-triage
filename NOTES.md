@@ -306,6 +306,26 @@ completed. The daily cap is not retryable, and no client-side limiter can see
 it coming. The eval runs on Vertex AI for that reason, cost stated alongside
 the numbers.
 
+## Where it goes next
+
+Three things the numbers point at, in the order I would do them.
+
+**`priority` needs a different input, not a better prompt.** 38.5% in every
+repeat of both configurations. The human labels encode context the issue text
+does not carry: what else is open, what shipped recently, who is asking. The
+`dupe_agent` already searches the repository; the next step is retrieval over
+the closed issues and their outcomes, with citations in the output so a
+reviewer can see why p2 rather than p3.
+
+**Keep the traces.** `--trace_to_cloud` gives spans for free but drops most
+of them here. The fix is an explicit OTel pipeline with a local collector,
+which also makes the token meter a metric rather than a print.
+
+**Put an API in front of it.** The graph runs behind ADK's own server today. A
+small FastAPI service with a triage endpoint and a resume-on-confirm endpoint
+is what a newsroom tool would actually call, and it is where the approval gate
+stops being a demo and becomes a queue.
+
 ## Environment gotcha (cost me ten minutes)
 
 This machine sets `NO_PROXY` containing `::1`. `httpx` cannot parse it and every

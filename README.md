@@ -17,8 +17,6 @@ The same six-step pipeline is implemented twice — once with `SequentialAgent` 
 
 **[Read the annotated walkthrough](https://famesjranko.github.io/adk-issue-triage/)** for the diagrams and findings, or run `./scripts/demo.sh` to watch it happen locally.
 
-> **Status.** Built over one day to find out what ADK 2.8 actually does, then tidied for reading. Everything under *What it does*, *Watch it run* and *Evaluate* runs and is covered by the guard tests in CI. The eval numbers below are from all 39 cases, three repeats per configuration, with the spread reported; the per-case results are committed under `eval/results/`. The Cloud Run deploy has been exercised end to end: the service ran full triages behind IAM auth and Cloud Trace holds the span tree below, with one open question about dropped spans noted under *Deploy*. Not built, deliberately: a FastAPI front-end, embedding-based duplicate search, and OTel export beyond what `--trace_to_cloud` gives for free. Each is a day, and a half-built one is worse than a named gap.
-
 ## What it does
 
 <picture>
