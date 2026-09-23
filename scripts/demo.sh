@@ -168,12 +168,17 @@ step7() {
   hdr 7 "Build the eval set from the repo's own human-applied labels" \
       "the ground truth is real, not invented for the demo" \
       "39 gradeable cases out of 42 issues — 3 lack area/* or priority/*"
-  uv run python scripts/build_evalset.py
+  local preview
+  preview=$(mktemp /tmp/adk-issue-triage-eval.XXXXXX.json) || return 1
+  if ! uv run python scripts/build_evalset.py --output "$preview"; then
+    rm -f -- "$preview"
+    return 1
+  fi
   echo
   b "  SAMPLE CASE"
-  uv run python -c "
-import json,pathlib
-c=json.loads(pathlib.Path('eval/triage.evalset.json').read_text())['eval_cases'][0]
+  if ! TRIAGE_EVAL_PREVIEW="$preview" uv run python -c "
+import json,os,pathlib
+c=json.loads(pathlib.Path(os.environ['TRIAGE_EVAL_PREVIEW']).read_text())['eval_cases'][0]
 turn=c['conversation'][0]
 expected=json.loads(turn['final_response']['parts'][0]['text'])
 tool=turn['intermediate_data']['tool_uses'][0]
@@ -181,6 +186,11 @@ print(f\"  ├─ id          {c['eval_id']}\")
 print(f\"  ├─ prompt      {turn['user_content']['parts'][0]['text']}\")
 print(f\"  ├─ tool        {tool['name']}({tool['args']['number']})\")
 print('  └─ expected    ' + ' · '.join(f'{k}={v or \"—\"}' for k,v in expected.items()))"
+  then
+    rm -f -- "$preview"
+    return 1
+  fi
+  rm -f -- "$preview"
 }
 
 step8() {

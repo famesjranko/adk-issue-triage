@@ -9,6 +9,7 @@ real eval loop rather than a decorative one.
 Writes eval/triage.evalset.json.
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -41,7 +42,7 @@ def truth(labels: list[str]) -> dict | None:
   }
 
 
-def main() -> None:
+def main(output: Path | None = None) -> None:
   result = RepositoryData(_request).labeled_issues()
   issues = result.value
 
@@ -75,7 +76,7 @@ def main() -> None:
         "session_input": {"app_name": "issue_triage", "user_id": "eval", "state": {}},
     })
 
-  out = ROOT / "eval" / "triage.evalset.json"
+  out = output or ROOT / "eval" / "triage.evalset.json"
   out.write_text(json.dumps({
       "eval_set_id": "triage",
       "name": "musicmeta issue triage",
@@ -93,4 +94,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-  main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument(
+      "--output", type=Path,
+      help="write somewhere other than eval/triage.evalset.json (used by the demo preview)")
+  main(parser.parse_args().output)

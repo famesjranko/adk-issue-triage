@@ -28,6 +28,15 @@ LABELS = [{"name": "bug", "description": "Something is broken"},
           {"name": "area/core", "description": None}]
 
 
+@pytest.fixture(autouse=True)
+def isolated_live_source(monkeypatch):
+  """Adapter tests own their source mode; a caller's demo mode must not leak in."""
+  monkeypatch.setenv("TRIAGE_DATA_SOURCE", "live")
+  repo.read_module_map.cache_clear()
+  yield
+  repo.read_module_map.cache_clear()
+
+
 class FakeGitHub:
   """Stands in for _request: canned payloads by path, and a log of calls."""
 
