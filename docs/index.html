@@ -486,9 +486,9 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
   <h1>Triage agent anatomy</h1>
   <p class="lede">
     An agent that reads a GitHub issue and predicts the labels a human already
-    applied to it, so every claim it makes can be scored against ground
-    truth nobody invented for the demo. This page explains what each layer does,
-    what to run to watch it happen, and what is still unfinished.
+    put on it. Because those labels exist, I can score every prediction against
+    answers nobody made up for the demo. This page covers what each layer does,
+    the commands to watch it work, and what is still unfinished.
   </p>
   <div class="legend">
     <span><i class="swatch" style="background:var(--code)"></i>deterministic code</span>
@@ -500,18 +500,18 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 <hr>
 
 <section class="col">
-  <p class="eyebrow">The idea in one line</p>
-  <h2>Put the model where judgement is needed. Put code everywhere else.</h2>
+  <p class="eyebrow">The design</p>
+  <h2>Where the model runs and where code runs</h2>
   <p>
-    Six steps run for every triage: fetch the issue, then analyse three things
-    that don&rsquo;t depend on each other, then assign a priority, then judge
-    readiness. That order never changes and never depends on the issue. So it is
-    <em>encoded as a graph</em>, not described in a prompt for the model to rediscover on every request.
+    Every triage runs the same six steps: fetch the issue, analyse three things
+    that don&rsquo;t depend on each other, assign a priority, judge readiness.
+    The order is the same whatever the issue says, so it is
+    <em>encoded as a graph</em> in code and the model never has to work it out from a prompt.
   </p>
   <p>
-    Only the judgements are model calls. The same reasoning decides where
-    authorisation lives: the model may <em>propose</em> a write to GitHub, but
-    code decides whether it happens.
+    Only the judgements are model calls. Authorisation follows the same split:
+    the model can <em>propose</em> a write to GitHub, and code decides whether
+    it happens.
   </p>
 </section>
 
@@ -587,10 +587,10 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       </svg>
     </div>
     <figcaption>
-      <b>The whole pipeline is seven model calls and one piece of control flow.</b>
-      Each agent writes exactly one key into session state; the next step reads
-      it by name. The three in the middle are concurrent because none of them
-      reads another&rsquo;s output. That is a fact about the work, so the graph&rsquo;s shape expresses it and no prompt has to ask for it.
+      <b>The pipeline: seven model calls and one piece of control flow.</b>
+      Each agent writes exactly one key into session state, and the next step
+      reads it by name. The middle three run concurrently because none of them
+      reads another&rsquo;s output; the graph encodes that, so no prompt has to ask for it.
     </figcaption>
   </figure>
 </section>
@@ -608,8 +608,8 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="layer-name">Runner<span class="tag is-code">runtime</span></div>
       <div class="layer-body">
         <p>
-          Executes the agent tree. Owns the session, the event stream, and the
-          plugins. <code>adk web</code> hides this piece from you, which is why a script wires it by hand.
+          Runs the agent tree and owns the session, the event stream and the
+          plugins. <code>adk web</code> hides this piece, so the script wires it up by hand.
         </p>
         <p class="file">scripts/triage.py</p>
       </div>
@@ -619,11 +619,11 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="layer-name">Plugins<span class="tag is-code">cross-cutting</span></div>
       <div class="layer-body">
         <p>
-          Registered once on the Runner, so they see every agent. Two of them:
-          a rate limiter keeping one sliding window <em>per model</em> (the free
-          tier&rsquo;s quota is per model, and the fan-out fires three calls at
-          once), and a token meter, because six model steps per triage is a cost
-          nothing else in the code makes visible.
+          Registered once on the Runner, so they see every agent. There are two.
+          A rate limiter keeps one sliding window <em>per model</em>, because the
+          free tier&rsquo;s quota is per model and the fan-out fires three calls at
+          once. A token meter counts what the six model steps per triage cost,
+          since nothing else in the code shows it.
         </p>
         <p class="file">issue_triage/plugins.py</p>
       </div>
@@ -634,8 +634,8 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="layer-body">
         <p>
           The fixed topology: intake &rarr; fan out to three analysts &rarr; join
-          &rarr; priority &rarr; readiness &rarr; emit JSON. Edges, not prompts.
-          Two versions exist side by side so they can be compared. One is the deprecated <code>SequentialAgent</code>/<code>ParallelAgent</code> form, the other is the graph <code>Workflow</code> that replaces it.
+          &rarr; priority &rarr; readiness &rarr; emit JSON, all as edges in code.
+          I kept two versions side by side to compare them: the deprecated <code>SequentialAgent</code>/<code>ParallelAgent</code> form and the graph <code>Workflow</code> that replaces it.
         </p>
         <p class="file">issue_triage/agent.py &middot; issue_triage/workflow_agent.py</p>
       </div>
@@ -645,10 +645,10 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="layer-name">Agents<span class="tag is-model">judgement</span></div>
       <div class="layer-body">
         <p>
-          Seven small single-purpose model calls, each writing one value to
-          session state. Cheap classifiers run on flash-lite; only the steps
-          where judgement matters spend a slot on the slower model, because that
-          slower model is capped at 5 requests per minute.
+          Seven small model calls with one job each, and each writes one value
+          to session state. The cheap classifiers run on flash-lite. The slower
+          model is capped at 5 requests per minute, so only the steps that need
+          real judgement spend a slot on it.
         </p>
         <p class="file">issue_triage/prompts.py</p>
       </div>
@@ -659,8 +659,8 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="layer-body">
         <p>
           Four narrow operations against GitHub, plus one that reads the target
-          repo&rsquo;s own architecture doc to ground the module classification.
-          <code>fetch_issue</code> strips labels on purpose, because they are the answer key. The docstrings are the model&rsquo;s API contract.
+          repo&rsquo;s own architecture doc to ground the module
+          classification. <code>fetch_issue</code> strips the labels because they are the answer key. The model reads the docstrings as its API contract.
         </p>
         <p class="file">issue_triage/tools/</p>
       </div>
@@ -670,7 +670,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="layer-name">Guards<span class="tag is-halt">refuse &amp; suspend</span></div>
       <div class="layer-body">
         <p>
-          Two separate concerns. <strong>Validation</strong> rejects any label that doesn&rsquo;t exist in the repository, and never consults the model to do it. <strong>Authorisation</strong> suspends the entire
+          These do two separate jobs. <strong>Validation</strong> rejects any label that doesn&rsquo;t exist in the repository, without asking the model. <strong>Authorisation</strong> suspends the whole
           run until a human confirms.
         </p>
         <p class="file">issue_triage/callbacks.py</p>
@@ -755,9 +755,9 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       </svg>
     </div>
     <figcaption>
-      <b>Every model call and every tool call passes through code the agent does
-      not control.</b> The rate limiter sleeps before the request leaves; the
-      cost meter counts on the way back. On the tool side the two guards differ on purpose. Validation <em>refuses and returns</em>. Confirmation <em>suspends the run</em>, and nothing downstream executes until a human answers.
+      <b>The code around each model call and tool call.</b> The agent controls
+      none of it. The rate limiter sleeps before a request goes out and the cost
+      meter counts on the way back. The two tool guards behave differently by design: validation <em>refuses and returns</em>, while confirmation <em>suspends the run</em> and nothing downstream executes until a human answers.
     </figcaption>
   </figure>
 </section>
@@ -842,18 +842,18 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       </svg>
     </div>
     <figcaption>
-      <b>The shape of the run is the shape of the graph.</b> One bar per agent,
-      placed at the second it finished. The three stacked bars are the
-      fan-out. They start together because nothing makes them wait. The staircase after them runs in series, because each step reads what the one before it wrote. <code>dupe_agent</code> is the long one only because it makes a
+      <b>Issue 231, one bar per agent.</b> Each bar is placed at the second
+      that agent finished. The three stacked bars are the fan-out, and they
+      start together because nothing makes them wait. The staircase after them runs in series, since each step reads what the one before it wrote. <code>dupe_agent</code> takes longest only because it makes a
       tool call the other two don&rsquo;t.
     </figcaption>
   </figure>
 
   <div class="col stack">
     <p>
-      Each agent&rsquo;s entire output is <em>one word</em>. That is why the dev UI looks sparse. There is no prose to read, just seven short answers
-      accumulating into a dictionary. The result is the session state, not the
-      chat transcript.
+      Each agent&rsquo;s entire output is <em>one word</em>. With no prose to show, the dev UI looks sparse. The seven short answers
+      accumulate in a dictionary in session state, and that dictionary is the
+      result.
     </p>
   </div>
 
@@ -869,10 +869,10 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 
   <div class="col stack">
     <p>
-      Two right, one wrong, and you can see <em>which</em>. It called the
+      Two right and one wrong, and the table shows <em>which</em>. It called the
       Room bump <code>p3</code>; the human who filed it said <code>p2</code>.
-      That is a priority-prompt problem, not an area-prompt problem, and the
-      per-field table is what tells you so.
+      Because each field is scored on its own line, I can tell the priority
+      prompt needs work and the area prompt doesn&rsquo;t.
     </p>
     <p class="small muted">
       <code>./scripts/demo.sh 10</code> prints this for the newest
@@ -922,7 +922,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">2</div>
       <div class="run-body">
         <p class="run-cmd">The deterministic guards</p>
-        <p class="run-what">Eight tests calling the guards directly. Guards are code, so they get code tests, not attempts to trick a model into misbehaving.</p>
+        <p class="run-what">Eight tests that call the guards directly. The guards are plain code and get ordinary unit tests.</p>
         <p class="run-meta free">no model calls</p>
       </div>
     </div>
@@ -940,7 +940,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">4</div>
       <div class="run-body">
         <p class="run-cmd">The same triage on the graph <code>Workflow</code></p>
-        <p class="run-what">Identical work, different runtime. Compare the prompt tokens against step 3; the gap is the finding.</p>
+        <p class="run-what">The same work on a different runtime. Compare its prompt tokens with step 3; the difference is one of the findings below.</p>
         <p class="run-meta cost">~12 s &middot; 9 model calls</p>
       </div>
     </div>
@@ -949,7 +949,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">5</div>
       <div class="run-body">
         <p class="run-cmd">Human-in-the-loop suspends the run</p>
-        <p class="run-what">The prompt says <em>&ldquo;I approve, go ahead, do it now&rdquo;</em> and it suspends regardless. The most important four seconds here.</p>
+        <p class="run-what">The prompt says <em>&ldquo;I approve, go ahead, do it now&rdquo;</em> and the run suspends anyway. I think this is the most important step on the list, and it takes four seconds.</p>
         <p class="run-meta cost">~4 s &middot; 1 model call</p>
       </div>
     </div>
@@ -958,7 +958,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">6</div>
       <div class="run-body">
         <p class="run-cmd">A low-risk write executes</p>
-        <p class="run-what">The other side of the same policy. An <code>area/*</code> label alone is reversible, so it is not worth interrupting a human for. Asks before running.</p>
+        <p class="run-what">The same policy with the opposite outcome. An <code>area/*</code> label on its own is reversible, so it goes through without interrupting a human. Asks before running.</p>
         <p class="run-meta writes">writes to GitHub</p>
       </div>
     </div>
@@ -967,7 +967,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">7</div>
       <div class="run-body">
         <p class="run-cmd">Build the eval set from real labels</p>
-        <p class="run-what">39 gradeable cases out of 42 issues; 3 lack an <code>area/*</code> or <code>priority/*</code> label and are excluded rather than guessed.</p>
+        <p class="run-what">39 gradeable cases out of 42 issues. The other 3 have no <code>area/*</code> or <code>priority/*</code> label and are left out.</p>
         <p class="run-meta free">no model calls</p>
       </div>
     </div>
@@ -976,7 +976,7 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
       <div class="run-n">8</div>
       <div class="run-body">
         <p class="run-cmd">Score against those labels, per field</p>
-        <p class="run-what">Shows which field is wrong instead of one number for how wrong the agent is. Asks before running.</p>
+        <p class="run-what">Scores each field separately, which shows you which one is wrong. Asks before running.</p>
         <p class="run-meta cost">~9 min, mostly rate-limited</p>
       </div>
     </div>
@@ -1007,17 +1007,17 @@ figcaption b { color: var(--ink-2); font-weight: 600; }
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Finding from step 5</p>
-    <h2>A gate that refuses, versus a gate that suspends</h2>
+    <h2>Approval, from a state flag to a suspended run</h2>
   </div>
 
   <div class="col stack">
     <p>
-      The first version of the approval gate was a flag in session state checked
-      by a callback. It demonstrated beautifully. The model asked to write, and the callback said no. But session state is <em>inside</em> the trust boundary, and the run never stopped. The model got an error string back and was free to narrate around it.
+      My first approval check was a flag in session state, read by a callback.
+      It demoed well: the model asked to write and the callback said no. But session state is <em>inside</em> the trust boundary, and the run never stopped. The model got an error string back and could carry on talking its way around it.
     </p>
     <p>
-      ADK ships the real mechanism. <code>require_confirmation</code> takes a
-      <strong>callable</strong>, invoked with the tool&rsquo;s own arguments, so the policy depends on what is being written:
+      ADK has a proper mechanism for this. <code>require_confirmation</code> takes a
+      <strong>callable</strong>, which is called with the tool&rsquo;s own arguments, so the policy can depend on what is being written:
     </p>
   </div>
 
@@ -1026,8 +1026,8 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 
   <div class="col">
     <p>
-      Filing an issue under a module is reversible. Asserting <code>p0</code> is a
-      claim about someone&rsquo;s week.
+      Filing an issue under a module is reversible. Marking it <code>p0</code>
+      makes a claim on someone&rsquo;s week, which is why that call suspends.
     </p>
   </div>
 
@@ -1097,19 +1097,18 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
       </svg>
     </div>
     <figcaption>
-      <b>The same tool, two outcomes, decided by the arguments.</b>
-      <code>require_confirmation</code> is a callable, so the policy is a function of what is being written, not a blanket setting on the tool. The band is the part that matters. A gate that returns an error leaves the model running and free to argue. A gate that suspends stops the model from running at all.
+      <b>One tool, two outcomes, depending on the arguments.</b>
+      Because <code>require_confirmation</code> is a callable, the policy is decided per call from what is being written. The band shows the suspended state. The state-flag version returned an error and left the model running and able to argue; a suspension stops the model.
     </figcaption>
   </figure>
 
   <div class="panel is-halt col">
-    <p class="panel-title">Why this is the part worth understanding</p>
+    <p class="panel-title">What happens on suspend</p>
     <p>
-      On suspend, ADK emits a confirmation request carrying the original function
-      call intact, and the invocation stops. <strong>The model is not
-      running.</strong> So no sentence in the conversation can approve it. Approval has to arrive as a structured <code>ToolConfirmation</code> from
-      whoever drives the runtime. That is the difference between a gate that
-      returns an error and a gate that halts a machine.
+      ADK emits a confirmation request carrying the original function call
+      intact, and the invocation stops. While it is stopped <strong>the model is
+      not running</strong>, so nothing typed into the conversation can approve the call. Approval has to arrive as a structured <code>ToolConfirmation</code> from
+      whoever drives the runtime.
     </p>
   </div>
 </section>
@@ -1179,21 +1178,21 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
       </svg>
     </div>
     <figcaption>
-      <b>The gap is structural, not a tuning win.</b> A sequential agent hands
-      each sub-agent the accumulated conversation, so every step re-pays for
-      every step before it. The graph passes only what the edge carries. By six model steps that starts to matter, and nothing in the agent code shows it. That is why the token meter exists.
+      <b>What the priority step&rsquo;s prompt contains under each runtime.</b> A
+      sequential agent hands each sub-agent the accumulated conversation, so
+      every step pays again for every step before it. The graph passes only what the edge carries.
     </figcaption>
   </figure>
 
   <div class="col stack">
     <p>
-      <code>SequentialAgent</code> hands each sub-agent the accumulated
-      conversation. The graph passes node input along edges. Over six model steps
-      that compounds, and nothing in the agent code makes it visible. That is the whole reason the token meter exists.
+      The difference comes entirely from how <code>SequentialAgent</code> and the
+      graph pass context, and no tuning was involved. Over six model steps it compounds, and nothing in the
+      agent code makes it visible, which is why I added the token meter.
     </p>
     <p class="small muted">
-      Caveat: one run each, not a benchmark. The direction is structural and
-      would hold; the exact multiple would move.
+      Caveat: this is one run of each. I expect the direction to hold because it
+      comes from the structure, but the exact multiple would change.
     </p>
   </div>
 
@@ -1266,8 +1265,8 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
       </svg>
     </div>
     <figcaption>
-      <b>A tuple on the left of an edge is three separate edges, not a gather.</b>
-      It reads like fan-in and behaves like a race. The failure was at least loud. A missing state key raised an error instead of quietly rendering an empty prompt, which is the right default for a template that feeds a model.
+      <b>A tuple on the left of an edge makes three separate edges.</b>
+      It looks like a fan-in, but the first branch to finish triggers the next step and it behaves like a race. At least it failed loudly: the template raised an error on the missing state key where it could have rendered an empty prompt, and for a template that feeds a model the error is the right default.
     </figcaption>
   </figure>
 </section>
@@ -1275,13 +1274,13 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Finding from step 8</p>
-    <h2>The experiment failed, and that is the result</h2>
+    <h2>The grounding ablation measured noise</h2>
   </div>
 
   <div class="col">
     <p>
-      The plan was an ablation: remove the repository module map from the
-      <code>area</code> prompt, change nothing else, and see what it costs.
+      I planned an ablation: remove the repository module map from the
+      <code>area</code> prompt, change nothing else, and see what that costs.
     </p>
   </div>
 
@@ -1302,36 +1301,36 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 
   <div class="col stack">
     <p>
-      The tidy story would be &ldquo;removing the grounding cost 8 points.&rdquo;
-      It isn&rsquo;t supportable. <code>kind</code> moved <strong>thirty
-      points</strong> on a prompt that is byte-for-byte identical between the two
-      runs. Run-to-run variance at 12 cases is larger than the effect being
-      measured, so the 8-point <code>area</code> delta is one issue changing its
+      Read quickly, the table says removing the grounding cost 8 points. The data
+      doesn&rsquo;t support that. <code>kind</code> moved <strong>thirty
+      points</strong> on a prompt that was byte-for-byte identical in both runs.
+      With 12 cases, run-to-run variance is larger than the effect I was
+      measuring, and the 8-point <code>area</code> delta is one issue changing its
       mind.
     </p>
     <p>
-      It only surfaced because the scorer grades every field separately. Three
-      unchanged prompts sitting in the same table were an accidental control
-      channel. The aggregate went from 64.9% to 67.6%. That would have looked like mild noise and said nothing, and a single similarity score would have hidden
-      it completely.
+      I only caught it because the scorer grades each field separately, so the
+      three unchanged prompts in the same table worked as an accidental control.
+      The aggregate went from 64.9% to 67.6%, which looks like mild noise and says nothing on its own. A single similarity score would have hidden
+      the problem completely.
     </p>
   </div>
 
   <div class="callout col">
-    <p class="panel-title">The mistake worth not repeating</p>
+    <p class="panel-title">What I got wrong</p>
     <p>
       I designed the ablation, got a delta in the direction I expected, and nearly
-      wrote it down as a result. The control was there by accident, not because
-      anyone planned one. <code>temperature</code> is now pinned to 0, which
-      should have been true from the first run. That alone will not fix
-      a sample size this small.
+      wrote it down as a result. Nobody planned a control; it was there by
+      accident. <code>temperature</code> is now pinned to 0, as it should have
+      been from the first run, though that does nothing about a sample size this
+      small.
     </p>
   </div>
 </section>
 
 <section>
   <div class="col stack-sm">
-    <p class="eyebrow">Still to do</p>
+    <p class="eyebrow">Status</p>
     <h2>What is finished and what isn&rsquo;t</h2>
   </div>
 
@@ -1351,7 +1350,7 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
         <p class="t"><code>agents-cli</code> skills installed</p>
         <p class="d">
           Seven ADK skills from google/agents-cli, pinned in
-          <code>skills-lock.json</code>, workspace scope, so nothing global was touched. The <code>Workflow</code> API turned up in Google&rsquo;s own reference. The published docs still describe the deprecated one.
+          <code>skills-lock.json</code> and installed at workspace scope, so nothing global changed. The <code>Workflow</code> API turned up in Google&rsquo;s own reference, while the published docs still describe the deprecated one.
         </p>
       </div>
     </div>
@@ -1361,8 +1360,8 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
       <div class="todo-body">
         <p class="t">Read a real trace in <code>adk web</code></p>
         <p class="d">
-          Done. The worked example above is one of those runs. Step 10
-          decodes any of them into the timeline rather than leaving you to read
+          Done; the worked example above is one of those runs. Step 10
+          decodes any of them into the timeline, which beats reading
           30 raw events.
         </p>
       </div>
@@ -1374,10 +1373,10 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
         <p class="t">Deploy to Cloud Run, read the span tree in Cloud Trace</p>
         <p class="d">
           Done, on the third deploy. The service ran complete triages behind
-          IAM auth and Cloud Trace holds the span tree for one, coordinator
-          through intake with real durations. The later spans never arrived,
-          which is recorded in the README rather than hidden. Each of the three
-          failures is now handled in <code>deploy.sh</code>; the notes have the
+          IAM auth, and Cloud Trace holds the span tree for one of them, from the
+          coordinator through intake, with real durations. The later spans never
+          arrived, and the README says so. <code>deploy.sh</code> now handles each
+          of the three failures, and the notes have the
           detail.
         </p>
       </div>
@@ -1389,11 +1388,11 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
         <p class="t">Re-run the eval so it actually measures something</p>
         <p class="d">
           Done: all 39 cases, three repeats per configuration, temperature
-          pinned. The 30-point swing was the temperature; with it pinned the
-          grounding is worth 5.1 points of <code>area</code> and the ranges do
-          not overlap. <code>priority</code> sits at 38.5% in every repeat of
-          both configurations, which makes it the next experiment. Tables in the
-          README and notes, per-case results committed.
+          pinned. The 30-point swing came from temperature. With it pinned, the
+          grounding is worth 5.1 points of <code>area</code> and the ranges don&rsquo;t
+          overlap. <code>priority</code> averages 38.5% in both
+          configurations, which makes it the next experiment. The tables are in the
+          README and notes, and the per-case results are committed.
         </p>
       </div>
     </div>
@@ -1403,27 +1402,26 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 
 <section>
   <div class="col stack-sm">
-    <p class="eyebrow">Two things that cost real money or real data</p>
-    <h2>Guardrails to keep in mind</h2>
+    <p class="eyebrow">Cost and data</p>
+    <h2>Two rules for the API key</h2>
   </div>
 
   <div class="col stack">
     <div class="panel is-halt">
       <p class="panel-title">The API key must stay on the unbilled project</p>
       <p>
-        It is issued against a project with billing disabled, which is what keeps it on the free tier. A key on any project with billing enabled would
-        auto-upgrade to a paid tier and bill per token. Free-tier prompts are also
-        used to improve Google&rsquo;s products, which is why the tool layer
-        hard-limits the agent to public repositories in code rather than asking a
-        prompt to be careful.
+        The key is issued against a project with billing disabled, and that is what keeps it on the free tier. On any project with billing enabled it would
+        auto-upgrade to a paid tier and bill per token. Google also uses free-tier
+        prompts to improve its products, so the tool layer limits the agent to
+        public repositories, and that limit is enforced in code.
       </p>
     </div>
 
     <div class="panel is-halt">
       <p class="panel-title">One process on the key at a time</p>
       <p>
-        The rate limiter keeps its window in memory; the quota is per project. An
-        eval run died part-way through because a single triage was run alongside it. Each process believed it was under 15 requests per minute, and together they were not. Headroom absorbs clock skew, not this.
+        The rate limiter keeps its window in memory, but the quota is per project. An
+        eval run died part-way through because I ran a single triage alongside it. Each process believed it was under 15 requests per minute, and together they were over. The limiter leaves headroom for clock skew, and that headroom can&rsquo;t absorb a second process.
       </p>
     </div>
   </div>
@@ -1432,7 +1430,7 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 <section>
   <div class="col stack-sm">
     <p class="eyebrow">Reference</p>
-    <h2>Measured, not assumed</h2>
+    <h2>Versions, limits and one gotcha</h2>
   </div>
 
   <div class="col">
@@ -1448,14 +1446,14 @@ apply_labels(231, [<span class="c">"area/core"</span>, <span class="m">"priority
 </section>
 
 <section class="col">
-  <p class="eyebrow">One more thing</p>
+  <p class="eyebrow">Architecture</p>
   <h2>Why none of these would be A2A services</h2>
   <p>
-    Seven agents sharing one session&rsquo;s state, inside one request, with one
-    owner and one deploy. A network boundary between them would buy nothing and
-    cost a serialisation format, a failure mode per hop, and seven things to
-    deploy. A2A earns its complexity when an agent has a different owner, deploy
-    cadence, scaling profile, or trust boundary. None of those is true here. Local composition until there is a deployment reason to cross.
+    All seven agents share one session&rsquo;s state inside one request, and they
+    have one owner and one deploy. A network boundary between them would gain
+    nothing and would add a serialisation format, a failure mode per hop, and
+    seven things to deploy. A2A is worth its complexity when an agent has a
+    different owner, deploy cadence, scaling profile or trust boundary, and none of those apply here. They stay composed locally until there is a deployment reason to split them.
   </p>
 </section>
 
